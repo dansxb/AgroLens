@@ -1,6 +1,6 @@
 "use client";
 
-import { apiClient } from "@/lib/api/client";
+import { apiClient, API_BASE_URL } from "@/lib/api/client";
 
 export type ApplicationType = "fungicide" | "herbicide" | "insecticide";
 
@@ -44,6 +44,5 @@ export function getExportUrl(
   applicationType: ApplicationType,
   format: "shapefile" | "taskdata" | "pdf"
 ): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-  return `${base}/api/v1/fields/${fieldId}/prescriptions/${applicationType}/export/${format}`;
+  return `${API_BASE_URL}/api/v1/fields/${fieldId}/prescriptions/${applicationType}/export/${format}`;
 }

@@ -117,7 +117,7 @@ export default function NewFieldPage() {
             onClick={() => setTab(t)}
             className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               tab === t
-                ? "border-green-600 text-green-700"
+                ? "border-agrolens-600 text-agrolens-700"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -134,7 +134,7 @@ export default function NewFieldPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Feldname *</label>
             <input
               {...register("name")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-agrolens-500 focus:border-transparent"
               placeholder="z.B. Nordfeld Müller"
             />
             {errors.name && (
@@ -146,7 +146,7 @@ export default function NewFieldPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Fruchtart</label>
             <input
               {...register("crop_type")}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-agrolens-500 focus:border-transparent"
               placeholder="z.B. Winterweizen"
             />
           </div>
@@ -162,7 +162,7 @@ export default function NewFieldPage() {
               </p>
             )}
             {drawnGeometry && (
-              <p className="text-green-600 text-xs mt-1">Polygon gezeichnet</p>
+              <p className="text-agrolens-600 text-xs mt-1">Polygon gezeichnet</p>
             )}
           </div>
 
@@ -175,7 +175,7 @@ export default function NewFieldPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-green-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-agrolens-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-agrolens-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {submitting ? "Wird gespeichert…" : "Feld anlegen"}
           </button>

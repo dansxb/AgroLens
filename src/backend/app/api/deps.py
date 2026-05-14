@@ -170,3 +170,40 @@ async def get_current_user_or_key(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found.")
 
     return user
+
+
+async def get_owned_field(
+    field_id: UUID,
+    current_user: "User",  # type: ignore[name-defined]
+    db: AsyncSession,
+) -> "Field":  # type: ignore[name-defined]
+    """Fetch a field owned by the authenticated user, or raise 404.
+
+    Ownership is checked transitively through the Farm → User chain.
+
+    Args:
+        field_id: UUID of the target field.
+        current_user: The authenticated user.
+        db: Async database session.
+
+    Returns:
+        The Field ORM object.
+
+    Raises:
+        HTTPException: 404 if the field is absent or not owned by current_user.
+    """
+    from app.models.farm import Farm  # noqa: PLC0415
+    from app.models.field import Field  # noqa: PLC0415
+
+    result = await db.execute(
+        select(Field)
+        .join(Farm, Farm.id == Field.farm_id)
+        .where(Field.id == field_id, Farm.user_id == current_user.id)
+    )
+    field = result.scalar_one_or_none()
+    if field is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Field {field_id} not found.",
+        )
+    return field

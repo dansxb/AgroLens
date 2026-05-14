@@ -148,6 +148,7 @@ export default function SettingsPage(): React.ReactElement {
       <DeleteAccountDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        userEmail={profile?.email ?? ""}
       />
     </>
   );

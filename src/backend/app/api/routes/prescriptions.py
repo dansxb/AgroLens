@@ -21,9 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db
-from app.models.field import Field
-from app.models.farm import Farm
+from app.api.deps import get_current_user, get_db, get_owned_field
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
 from app.models.spraying_record import SprayingRecord
@@ -40,35 +38,6 @@ from app.services.s3_storage import S3StorageService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["prescriptions"])
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-async def _get_owned_field(
-    field_id: uuid.UUID,
-    current_user: User,
-    db: AsyncSession,
-) -> Field:
-    """Fetch a field that belongs to the authenticated user.
-
-    Raises:
-        HTTPException: 404 if not found or not owned.
-    """
-    result = await db.execute(
-        select(Field)
-        .join(Farm, Farm.id == Field.farm_id)
-        .where(Field.id == field_id, Farm.user_id == current_user.id)
-    )
-    field = result.scalar_one_or_none()
-    if field is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Field {field_id} not found.",
-        )
-    return field
 
 
 def _build_prescription_read(
@@ -162,7 +131,7 @@ async def create_prescription(
         HTTPException: 404 if field not found / not owned.
         HTTPException: 422 if no composite imagery exists for the field.
     """
-    field = await _get_owned_field(field_id, current_user, db)
+    field = await get_owned_field(field_id, current_user, db)
 
     s3 = S3StorageService()
     service = PrescriptionService(db, s3)
@@ -222,7 +191,7 @@ async def list_prescriptions(
     Returns:
         List of :class:`PrescriptionRead` schemas.
     """
-    await _get_owned_field(field_id, current_user, db)
+    await get_owned_field(field_id, current_user, db)
 
     pres_result = await db.execute(
         select(Prescription)
@@ -301,7 +270,7 @@ async def create_spraying_record(
     Raises:
         HTTPException: 404 if field not found / not owned.
     """
-    await _get_owned_field(field_id, current_user, db)
+    await get_owned_field(field_id, current_user, db)
 
     if payload.field_id != field_id:
         raise HTTPException(
@@ -349,7 +318,7 @@ async def list_spraying_records(
     Returns:
         List of :class:`SprayingRecordRead` schemas ordered by application date.
     """
-    await _get_owned_field(field_id, current_user, db)
+    await get_owned_field(field_id, current_user, db)
 
     result = await db.execute(
         select(SprayingRecord)

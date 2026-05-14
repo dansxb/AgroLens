@@ -24,9 +24,7 @@ from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db
-from app.models.farm import Farm
-from app.models.field import Field
+from app.api.deps import get_current_user, get_db, get_owned_field
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
 from app.models.user import User
@@ -39,26 +37,6 @@ logger = logging.getLogger(__name__)
 ApplicationType = Literal["fungicide", "herbicide", "insecticide"]
 
 router = APIRouter(tags=["exports"])
-
-
-async def _get_owned_field(
-    field_id: uuid.UUID,
-    current_user: User,
-    db: AsyncSession,
-) -> Field:
-    """Fetch a field owned by the current user or raise 404."""
-    result = await db.execute(
-        select(Field)
-        .join(Farm, Farm.id == Field.farm_id)
-        .where(Field.id == field_id, Farm.user_id == current_user.id)
-    )
-    field = result.scalar_one_or_none()
-    if field is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Field {field_id} not found.",
-        )
-    return field
 
 
 async def _load_latest_prescription(
@@ -117,7 +95,7 @@ async def export_shapefile(
     Returns:
         ZIP file containing .shp/.shx/.dbf/.prj/.cpg.
     """
-    field = await _get_owned_field(field_id, current_user, db)
+    field = await get_owned_field(field_id, current_user, db)
     zones, prescriptions = await _load_latest_prescription(field_id, app_type, db)
 
     try:
@@ -164,7 +142,7 @@ async def export_taskdata_xml(
     Returns:
         ZIP file containing TASKDATA.XML in ISO 11783-10 format.
     """
-    field = await _get_owned_field(field_id, current_user, db)
+    field = await get_owned_field(field_id, current_user, db)
     zones, prescriptions = await _load_latest_prescription(field_id, app_type, db)
 
     try:
@@ -217,7 +195,7 @@ async def export_pdf(
     Returns:
         PDF file.
     """
-    field = await _get_owned_field(field_id, current_user, db)
+    field = await get_owned_field(field_id, current_user, db)
     zones, prescriptions = await _load_latest_prescription(field_id, app_type, db)
 
     if not prescriptions:

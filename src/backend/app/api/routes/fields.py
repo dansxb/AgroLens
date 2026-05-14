@@ -31,7 +31,7 @@ from geoalchemy2.functions import ST_Area, ST_AsGeoJSON, ST_GeomFromGeoJSON, ST_
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, get_owned_field
 from app.models.farm import Farm
 from app.models.field import Field
 from app.models.user import User
@@ -127,41 +127,6 @@ async def _verify_farm_ownership(
             detail=f"Farm {farm_id} not found.",
         )
     return farm
-
-
-async def _get_owned_field(
-    field_id: uuid.UUID,
-    current_user: User,
-    db: AsyncSession,
-) -> Field:
-    """Fetch a field, returning 404 if not found or not owned.
-
-    Ownership is checked transitively: the field's farm must be owned
-    by the current user.
-
-    Args:
-        field_id: UUID of the target field.
-        current_user: The authenticated user.
-        db: Async database session.
-
-    Returns:
-        The :class:`Field` ORM object.
-
-    Raises:
-        HTTPException: 404 if the field is absent or not owned.
-    """
-    result = await db.execute(
-        select(Field)
-        .join(Farm, Farm.id == Field.farm_id)
-        .where(Field.id == field_id, Farm.user_id == current_user.id)
-    )
-    field = result.scalar_one_or_none()
-    if field is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Field {field_id} not found.",
-        )
-    return field
 
 
 @router.get("/", response_model=List[FieldRead], summary="List all fields")
@@ -276,7 +241,7 @@ async def get_field(
     Raises:
         HTTPException: 404 if the field does not exist or is not owned.
     """
-    field = await _get_owned_field(field_id, current_user, db)
+    field = await get_owned_field(field_id, current_user, db)
     return await _field_to_read(field, db)
 
 
@@ -304,7 +269,7 @@ async def update_field(
         HTTPException: 404 if the field does not exist or is not owned.
         HTTPException: 422 if the updated geometry is not a valid Polygon.
     """
-    field = await _get_owned_field(field_id, current_user, db)
+    field = await get_owned_field(field_id, current_user, db)
 
     if payload.name is not None:
         field.name = payload.name
@@ -325,6 +290,7 @@ async def update_field(
 @router.delete(
     "/{field_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
     summary="Delete a field",
 )
 async def delete_field(
@@ -342,7 +308,7 @@ async def delete_field(
     Raises:
         HTTPException: 404 if the field does not exist or is not owned.
     """
-    field = await _get_owned_field(field_id, current_user, db)
+    field = await get_owned_field(field_id, current_user, db)
     await db.delete(field)
     await db.flush()
     logger.info("Deleted field id=%s for user=%s", field_id, current_user.id)
