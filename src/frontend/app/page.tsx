@@ -185,7 +185,7 @@ export default function LandingPage() {
             {/* Nav links */}
             <div className="hidden sm:flex items-center gap-6">
               <Link
-                href="#wie-es-funktioniert"
+                href="/wie-es-funktioniert"
                 className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors duration-150"
               >
                 So funktioniert's
@@ -249,7 +249,7 @@ export default function LandingPage() {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-agrolens-500" />
                 </span>
                 <span className="text-sm font-medium text-agrolens-700">
-                  Sentinel-2 · 10m Auflösung · Alle 10 Tage aktualisiert
+                  Sentinel-2 · 10 m Auflösung · Alle 5–10 Tage aktualisiert
                 </span>
               </div>
 
@@ -269,9 +269,9 @@ export default function LandingPage() {
               {/* Stats row */}
               <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-0 sm:divide-x sm:divide-gray-200">
                 {[
-                  { value: "20–40 %", label: "weniger Pestizide" },
-                  { value: "€20–50", label: "Ersparnis / ha" },
-                  { value: "Alle 10 Tage", label: "neu analysiert" },
+                  { value: "10 m", label: "Satelliten-Auflösung" },
+                  { value: "5–10 Tage", label: "Analyse-Rhythmus" },
+                  { value: "§67 PflSchG", label: "konform" },
                 ].map((stat) => (
                   <div key={stat.label} className="px-8 text-center">
                     <p
@@ -431,40 +431,11 @@ export default function LandingPage() {
                     <p className="text-sm font-semibold text-white mt-0.5">6 von 6</p>
                   </div>
                   <div className="px-4 py-3 sm:px-6 sm:py-4">
-                    <p className="text-xs text-agrolens-400">Einsparung Saison</p>
-                    <p className="text-sm font-semibold text-earth-400 mt-0.5">€ 4.280</p>
+                    <p className="text-xs text-agrolens-400">Einsparung (Beispiel)</p>
+                    <p className="text-sm font-semibold text-earth-400 mt-0.5">Beispiel: € 3.200</p>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ==================================================================
-            TRUST BAR
-            ================================================================== */}
-        <section className="bg-gray-50 border-y border-gray-100 py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-xs font-semibold uppercase tracking-widest text-gray-400 mb-8">
-              Vertrauen von Landwirten in ganz Deutschland
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {[
-                { value: "127+", label: "Betriebe" },
-                { value: "38.000+ ha", label: "analysiert" },
-                { value: "€ 2,3 Mio.", label: "Einsparungen gesamt" },
-                { value: "4,9 / 5 ★", label: "Bewertung" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 shadow-sm"
-                >
-                  <span className="text-sm font-bold text-gray-900">
-                    {stat.value}
-                  </span>
-                  <span className="text-sm text-gray-500">{stat.label}</span>
-                </div>
-              ))}
             </div>
           </div>
         </section>
