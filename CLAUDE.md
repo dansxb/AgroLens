@@ -36,6 +36,7 @@
 - Zero context switching required from the user
 - Go fix failing CI tests without being told how
 
+
 ## Task Management
 
 1. **Plan First**: Write plan to `tasks/todo.md` with checkable items

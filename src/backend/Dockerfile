@@ -42,6 +42,7 @@ RUN pip install "setuptools<81" "Cython<3" "numpy==1.26.*" pip --upgrade && \
     pip wheel --no-build-isolation --no-deps --wheel-dir=/wheelhouse rasterio==1.3.11 && \
     CFLAGS="-Wno-incompatible-pointer-types" \
         pip wheel --no-build-isolation --no-deps --wheel-dir=/wheelhouse "fiona==1.9.*" && \
+    pip uninstall -y Cython numpy && \
     pip install --prefix=/install --find-links=/wheelhouse --prefer-binary -r requirements.txt
 
 

@@ -27,6 +27,7 @@ const config: Config = {
           700: "#15803d",
           800: "#166534",
           900: "#14532d",
+          // Deep forest green — sidebar background, dark CTA sections
           950: "#052e16",
         },
         earth: {
@@ -44,13 +45,12 @@ const config: Config = {
           950: "#422006",
         },
         // -------------------------------------------------------
-        // Status colours (map directly to Tailwind semantic names
-        // for consistency with health-status logic)
+        // Status colours (map directly to semantic health states)
         // -------------------------------------------------------
         status: {
           healthy: "#22c55e",  // green — normal NDVI
-          warning: "#f59e0b",  // amber — mild stress (10-15% below avg)
-          alert: "#ef4444",    // red — significant stress (>15% below avg)
+          warning: "#f59e0b",  // amber — mild stress (10–15 % below avg)
+          alert: "#ef4444",    // red — significant stress (>15 % below avg)
           unknown: "#94a3b8",  // slate — no data yet
         },
         // -------------------------------------------------------
@@ -64,7 +64,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          "Inter",
+          "var(--font-inter)",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -81,15 +81,34 @@ const config: Config = {
           "monospace",
         ],
       },
+      fontSize: {
+        // Explicit display scale — used for hero/landing headlines
+        "display-sm": ["2rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
+        "display-md": ["3rem", { lineHeight: "1.05", letterSpacing: "-0.03em" }],
+        "display-lg": ["4rem", { lineHeight: "1.0", letterSpacing: "-0.04em" }],
+        "display-xl": ["5rem", { lineHeight: "1.0", letterSpacing: "-0.04em" }],
+      },
       spacing: {
-        // Sidebar width
-        sidebar: "240px",
+        // Sidebar width — 260 px matches the design spec
+        sidebar: "260px",
         // Top navigation height
         topnav: "64px",
       },
       screens: {
         // Tablet landscape breakpoint (10-inch, 1280×800)
         tablet: "1024px",
+      },
+      boxShadow: {
+        // Elevation tokens used across cards and floating elements
+        card: "0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.05)",
+        "card-hover":
+          "0 4px 12px 0 rgb(0 0 0 / 0.10), 0 2px 4px -1px rgb(0 0 0 / 0.06)",
+        "sidebar-edge":
+          "2px 0 8px 0 rgb(0 0 0 / 0.12)",
+      },
+      transitionDuration: {
+        // Default micro-interaction speed
+        DEFAULT: "150ms",
       },
     },
   },

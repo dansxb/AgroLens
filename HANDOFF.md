@@ -1,6 +1,6 @@
 # AgroLens — Session Handoff
 
-*Claude reads this at every session start. Last updated: 2026-05-13.*
+*Claude reads this at every session start. Last updated: 2026-05-14.*
 
 ---
 
@@ -28,14 +28,20 @@ AgroLens is a precision agriculture SaaS for German farmers. It pulls Sentinel-2
 ## Phase 5 — what to build next
 
 **Backend:**
-- `Subscription` ORM model (PgEnum: starter/farmer/pro/trialing/past_due/canceled — `create_type=False`)
+- `Subscription` ORM model (PgEnum: **basis/starter/farmer/pro**/trialing/past_due/canceled — `create_type=False`)
 - Migration `0007_create_subscriptions.py`
 - `services/stripe_service.py` — create_checkout_session, create_portal_session, get_or_create_customer
 - `POST /api/v1/billing/checkout` and `POST /api/v1/billing/portal`
 - `POST /api/v1/webhooks/stripe` — verify Stripe-Signature, handle 5 webhook events, update Subscription
-- `app/core/limits.py` — starter: 5 fields/50 ha, farmer: 50 fields/500 ha, pro: unlimited
+- `app/core/limits.py` — **basis: 1 field/15 ha (free, no export)**, starter: 5 fields/**100 ha**, farmer: 50 fields/500 ha, pro: unlimited
 - Enforce limits in `POST /api/v1/fields` and `POST /api/v1/fields/{id}/prescriptions`
 - Update `GET /api/v1/account/usage` to return real plan_limit from Subscription
+
+**Pricing (updated 2026-05-14):**
+- Basis: €0 (permanent free tier — 1 field, 15 ha, NDVI only, no export)
+- Starter: €49/mo · €470/yr — 5 fields, 100 ha
+- Farmer: €149/mo · €1.430/yr — 50 fields, 500 ha (recommended)
+- Pro: **€599/mo · €5.750/yr** — unlimited (raised from €399 — Lohnunternehmer pricing)
 
 **Frontend:**
 - `app/(dashboard)/settings/billing/page.tsx`

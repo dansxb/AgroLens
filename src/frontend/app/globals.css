@@ -5,118 +5,365 @@
 @tailwind utilities;
 
 /* -----------------------------------------------------------------------
-   Base layer customisation
+   Font loading
+   Inter is served via next/font/google (build-time download, self-hosted).
+   No runtime request to Google — GDPR-compliant under German law.
+   The CSS variable --font-inter is injected by layout.tsx via inter.variable.
+   ----------------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------------
+   Base layer — design tokens and sensible defaults
    ----------------------------------------------------------------------- */
 @layer base {
   :root {
-    /* Brand colour custom properties (mirrors tailwind.config.ts agrolens) */
-    --color-primary: #16a34a;
+    /* ------------------------------------------------------------------
+       Brand colour custom properties
+       Mirrors tailwind.config.ts — use these in raw CSS when Tailwind
+       utility classes are not available (e.g. SVG fills, canvas overlays).
+    ------------------------------------------------------------------ */
+    --color-primary:       #16a34a;
     --color-primary-hover: #15803d;
-    --color-earth: #ca8a04;
-    --color-earth-hover: #a16207;
+    --color-primary-dark:  #052e16;
+    --color-earth:         #ca8a04;
+    --color-earth-hover:   #a16207;
 
     /* Status colours */
     --color-healthy: #22c55e;
     --color-warning: #f59e0b;
-    --color-alert: #ef4444;
+    --color-alert:   #ef4444;
     --color-unknown: #94a3b8;
 
-    /* Layout dimensions */
-    --sidebar-width: 240px;
-    --topnav-height: 64px;
+    /* ------------------------------------------------------------------
+       Layout dimensions
+       --sidebar-width drives both the CSS and the Tailwind spacing token
+       `sidebar` (260 px). Keep them in sync whenever this value changes.
+    ------------------------------------------------------------------ */
+    --sidebar-width:  260px;
+    --topnav-height:  64px;
+
+    /* ------------------------------------------------------------------
+       Elevation / depth tokens
+       Use these for consistent shadow application across components.
+    ------------------------------------------------------------------ */
+    --shadow-card:      0 1px 3px 0 rgb(0 0 0 / 0.07),
+                        0 1px 2px -1px rgb(0 0 0 / 0.05);
+    --shadow-card-hover: 0 4px 12px 0 rgb(0 0 0 / 0.10),
+                         0 2px 4px -1px rgb(0 0 0 / 0.06);
+    --shadow-dropdown:  0 8px 24px 0 rgb(0 0 0 / 0.12),
+                        0 2px 6px -1px rgb(0 0 0 / 0.08);
   }
 
-  /* Smooth scrolling for the whole page */
-  html {
-    scroll-behavior: smooth;
+  /* Smooth scrolling — only for users who have not requested reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
-  /* Focus-visible ring in brand colour */
+  /* Focus-visible ring — on-brand, accessible, consistent */
   *:focus-visible {
-    @apply outline-none ring-2 ring-agrolens-600 ring-offset-2;
+    @apply outline-none ring-2 ring-agrolens-500 ring-offset-2;
   }
 
   /* Default body typography */
   body {
     @apply bg-white text-gray-900 font-sans antialiased;
+    /* Improve text rendering on macOS */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Heading defaults — tighten tracking at scale */
+  h1, h2, h3 {
+    @apply font-bold tracking-tight;
+  }
+  h4, h5, h6 {
+    @apply font-semibold;
   }
 }
 
 /* -----------------------------------------------------------------------
    Component layer — reusable utility classes
+   All classes here are composable and do not carry layout assumptions.
    ----------------------------------------------------------------------- */
 @layer components {
-  /* Primary button */
+
+  /* =====================================================================
+     BUTTONS
+     Primary: dominant brand call-to-action — green, shadow, lift on hover
+     Secondary: outlined, subdued — for supporting actions
+     Danger: destructive actions — red, same sizing as primary
+     ===================================================================== */
+
+  /* Primary button — premium feel with shadow lift */
   .btn-primary {
-    @apply inline-flex items-center justify-center
-           rounded-md bg-agrolens-600 px-4 py-2
-           text-sm font-semibold text-white shadow-sm
-           hover:bg-agrolens-700 active:bg-agrolens-800
-           focus-visible:ring-agrolens-600
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors duration-150;
+    @apply inline-flex items-center justify-center gap-2
+           rounded-lg bg-agrolens-600 px-5 py-2.5
+           text-sm font-semibold text-white
+           shadow-sm hover:shadow-md
+           hover:bg-agrolens-700 active:bg-agrolens-800 active:shadow-sm
+           focus-visible:ring-agrolens-500
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+           transition-all duration-150 ease-out;
   }
 
   /* Secondary button */
   .btn-secondary {
-    @apply inline-flex items-center justify-center
-           rounded-md bg-white px-4 py-2
-           text-sm font-semibold text-gray-900 shadow-sm
-           ring-1 ring-inset ring-gray-300
-           hover:bg-gray-50 active:bg-gray-100
+    @apply inline-flex items-center justify-center gap-2
+           rounded-lg bg-white px-5 py-2.5
+           text-sm font-semibold text-gray-700
+           shadow-sm ring-1 ring-inset ring-gray-300
+           hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100
            disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors duration-150;
+           transition-all duration-150 ease-out;
   }
 
   /* Destructive / danger button */
   .btn-danger {
-    @apply inline-flex items-center justify-center
-           rounded-md bg-red-600 px-4 py-2
-           text-sm font-semibold text-white shadow-sm
-           hover:bg-red-700 active:bg-red-800
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors duration-150;
+    @apply inline-flex items-center justify-center gap-2
+           rounded-lg bg-red-600 px-5 py-2.5
+           text-sm font-semibold text-white
+           shadow-sm hover:shadow-md
+           hover:bg-red-700 active:bg-red-800 active:shadow-sm
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+           transition-all duration-150 ease-out;
   }
+
+  /* Ghost / tertiary button — no background, minimal footprint */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           rounded-lg px-4 py-2
+           text-sm font-medium text-gray-600
+           hover:bg-gray-100 hover:text-gray-900
+           active:bg-gray-200
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-all duration-150 ease-out;
+  }
+
+  /* =====================================================================
+     FORM ELEMENTS
+     h-11 (44 px) height, gray-50 background — clean without double-border.
+     ===================================================================== */
 
   /* Form input */
   .input-field {
-    @apply block w-full rounded-md border-0 px-3 py-2
-           text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300
+    @apply block w-full h-11 rounded-lg
+           border-0 bg-gray-50 px-3
+           text-gray-900 text-sm
+           shadow-none ring-1 ring-inset ring-gray-200
            placeholder:text-gray-400
-           focus:ring-2 focus:ring-inset focus:ring-agrolens-600
-           sm:text-sm sm:leading-6;
+           hover:ring-gray-300
+           focus:bg-white focus:ring-2 focus:ring-inset focus:ring-agrolens-500
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-all duration-150;
+  }
+
+  /* Textarea — same visual language as input-field */
+  .textarea-field {
+    @apply block w-full rounded-lg
+           border-0 bg-gray-50 px-3 py-2.5
+           text-gray-900 text-sm leading-relaxed
+           ring-1 ring-inset ring-gray-200
+           placeholder:text-gray-400
+           hover:ring-gray-300
+           focus:bg-white focus:ring-2 focus:ring-inset focus:ring-agrolens-500
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-all duration-150 resize-y;
+  }
+
+  /* Select — matches input-field height and style */
+  .select-field {
+    @apply block w-full h-11 rounded-lg
+           border-0 bg-gray-50 pl-3 pr-8
+           text-gray-900 text-sm
+           ring-1 ring-inset ring-gray-200
+           hover:ring-gray-300
+           focus:ring-2 focus:ring-inset focus:ring-agrolens-500
+           disabled:opacity-50 disabled:cursor-not-allowed
+           transition-all duration-150 cursor-pointer;
   }
 
   /* Form label */
   .form-label {
-    @apply block text-sm font-medium leading-6 text-gray-900;
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
   }
 
-  /* Error message */
+  /* Error message below a field */
   .form-error {
-    @apply mt-1 text-sm text-red-600;
+    @apply mt-1.5 text-xs font-medium text-red-600;
   }
 
-  /* Card container */
+  /* Helper text below a field */
+  .form-hint {
+    @apply mt-1.5 text-xs text-gray-500;
+  }
+
+  /* =====================================================================
+     CARDS
+     card:         general-purpose container — clean ring, subtle shadow
+     stat-card:    KPI / metric card — hover lift, more prominent
+     card-feature: landing page feature card — padded, hover lift
+     ===================================================================== */
+
+  /* General card */
   .card {
-    @apply rounded-lg border border-gray-200 bg-white p-6 shadow-sm;
+    @apply rounded-xl bg-white p-6
+           shadow-[var(--shadow-card)]
+           ring-1 ring-black/5;
   }
 
-  /* Badge — status indicator */
+  /* Stat / KPI card — used on dashboard overview */
+  .stat-card {
+    @apply rounded-2xl bg-white p-6
+           shadow-sm ring-1 ring-black/5
+           hover:shadow-md
+           transition-shadow duration-200;
+  }
+
+  /* Feature card — landing page, generous padding */
+  .card-feature {
+    @apply bg-white rounded-2xl p-8
+           shadow-sm ring-1 ring-black/5
+           hover:shadow-md
+           transition-shadow duration-200;
+  }
+
+  /* =====================================================================
+     BADGES
+     Pill-shaped, muted background — not garish solid colors.
+     ===================================================================== */
+
   .badge-healthy {
-    @apply inline-flex items-center rounded-full bg-green-100
-           px-2.5 py-0.5 text-xs font-medium text-green-800;
+    @apply inline-flex items-center rounded-full
+           bg-green-50 px-2.5 py-0.5
+           text-xs font-semibold text-green-700
+           ring-1 ring-inset ring-green-600/20;
   }
+
   .badge-warning {
-    @apply inline-flex items-center rounded-full bg-amber-100
-           px-2.5 py-0.5 text-xs font-medium text-amber-800;
+    @apply inline-flex items-center rounded-full
+           bg-amber-50 px-2.5 py-0.5
+           text-xs font-semibold text-amber-700
+           ring-1 ring-inset ring-amber-600/20;
   }
+
   .badge-alert {
-    @apply inline-flex items-center rounded-full bg-red-100
-           px-2.5 py-0.5 text-xs font-medium text-red-800;
+    @apply inline-flex items-center rounded-full
+           bg-red-50 px-2.5 py-0.5
+           text-xs font-semibold text-red-600
+           ring-1 ring-inset ring-red-600/20;
   }
+
   .badge-unknown {
-    @apply inline-flex items-center rounded-full bg-gray-100
-           px-2.5 py-0.5 text-xs font-medium text-gray-600;
+    @apply inline-flex items-center rounded-full
+           bg-gray-100 px-2.5 py-0.5
+           text-xs font-semibold text-gray-500
+           ring-1 ring-inset ring-gray-500/20;
+  }
+
+  /* =====================================================================
+     NAVIGATION
+     Designed for the agrolens-950 dark sidebar.
+
+     .nav-item          — base structural styles shared by all states
+     .nav-item-active   — currently selected route
+     .nav-item-inactive — default / hover state
+     ===================================================================== */
+
+  /* Base nav link — apply alongside one of the state modifiers below */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5
+           rounded-lg text-sm font-medium
+           transition-all duration-150;
+  }
+
+  /* Active route — prominent white background tint */
+  .nav-item-active {
+    @apply bg-white/10 text-white;
+  }
+
+  /* Inactive route — subdued, brightens on hover */
+  .nav-item-inactive {
+    @apply text-agrolens-100/70
+           hover:bg-white/5 hover:text-white;
+  }
+
+  /* =====================================================================
+     LABELS & HEADINGS
+     .section-label  — data table / sidebar section separator
+     .heading-display — hero / landing page large headline
+     ===================================================================== */
+
+  /* Section separator label — uppercase, tight tracking, muted */
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-gray-400;
+  }
+
+  /* Hero / landing page display heading */
+  .heading-display {
+    @apply text-4xl sm:text-5xl lg:text-6xl
+           font-extrabold tracking-tight leading-none;
+  }
+
+  /* =====================================================================
+     TABLE
+     Structured data grid — used for NDVI readings, prescriptions, jobs.
+     ===================================================================== */
+
+  .table-container {
+    @apply overflow-hidden rounded-xl
+           ring-1 ring-gray-200
+           shadow-[var(--shadow-card)];
+  }
+
+  .table-header-cell {
+    @apply px-4 py-3 text-left text-xs font-semibold
+           uppercase tracking-wider text-gray-500
+           bg-gray-50 border-b border-gray-200;
+  }
+
+  .table-cell {
+    @apply px-4 py-3 text-sm text-gray-700
+           whitespace-nowrap;
+  }
+
+  /* Alternating row tint — aids readability in dense tables */
+  .table-row-even {
+    @apply bg-white;
+  }
+
+  .table-row-odd {
+    @apply bg-gray-50/60;
+  }
+
+  /* =====================================================================
+     OVERLAYS & MODALS
+     Backdrop blur prevents context loss when a modal opens.
+     ===================================================================== */
+
+  .modal-backdrop {
+    @apply fixed inset-0 z-40 bg-black/40 backdrop-blur-sm
+           transition-opacity duration-200;
+  }
+
+  .modal-panel {
+    @apply relative z-50 mx-auto w-full max-w-lg
+           rounded-2xl bg-white p-6
+           shadow-[var(--shadow-dropdown)]
+           ring-1 ring-black/5;
+  }
+
+  /* =====================================================================
+     SKELETON LOADERS
+     Matches surrounding card dimensions — no raw "Loading…" text.
+     ===================================================================== */
+
+  .skeleton {
+    @apply animate-pulse rounded-md bg-gray-200;
+  }
+
+  .skeleton-text {
+    @apply h-4 rounded bg-gray-200 animate-pulse;
   }
 }
