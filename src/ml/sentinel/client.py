@@ -13,14 +13,14 @@ from typing import Any
 
 import numpy as np
 from sentinelhub import (
-    BBox,
     CRS,
+    BBox,
     DataCollection,
     MimeType,
     MosaickingOrder,
-    SHConfig,
     SentinelHubCatalog,
     SentinelHubRequest,
+    SHConfig,
     bbox_to_dimensions,
 )
 
@@ -186,8 +186,7 @@ class SentinelHubClient:
                     )
                 ],
                 responses=[
-                    SentinelHubRequest.output_response(b, MimeType.TIFF)
-                    for b in bands
+                    SentinelHubRequest.output_response(b, MimeType.TIFF) for b in bands
                 ],
                 bbox=sh_bbox,
                 size=size,

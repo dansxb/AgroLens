@@ -35,7 +35,9 @@ class TestComputePrescription:
 
     def test_savings_pct_is_positive_for_standard_k3(self) -> None:
         result = compute_prescription("fungicide", 2.0, ["Low", "Medium", "High"])
-        assert result.savings_pct > 0, "VRA should use less product than uniform application"
+        assert (
+            result.savings_pct > 0
+        ), "VRA should use less product than uniform application"
 
     def test_mean_rate_is_weighted_average(self) -> None:
         result = compute_prescription("herbicide", 4.0, ["Low", "Medium", "High"])
@@ -48,7 +50,9 @@ class TestComputePrescription:
         assert result.zones[0].rate_l_ha < result.zones[1].rate_l_ha
 
     def test_k4_zones(self) -> None:
-        result = compute_prescription("fungicide", 2.0, ["Low", "Medium", "High", "Very High"])
+        result = compute_prescription(
+            "fungicide", 2.0, ["Low", "Medium", "High", "Very High"]
+        )
         assert len(result.zones) == 4
 
     def test_k5_zones(self) -> None:

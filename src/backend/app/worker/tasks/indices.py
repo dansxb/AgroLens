@@ -11,9 +11,8 @@ import logging
 import uuid
 from datetime import date
 
-from celery import Task
-
 from app.worker.celery_app import celery_app
+from celery import Task
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +41,12 @@ def compute_field_indices(
         composite rasters, or empty strings if no scenes were available.
     """
     import numpy as np
-    from rasterio.crs import CRS
-    from rasterio.transform import from_bounds
-    from sqlalchemy import and_, select
-
     from app.db.session import SessionLocal
     from app.models.satellite_scene import SatelliteScene
     from app.models.vegetation_index import VegetationIndex
     from app.services.s3_storage import download_geotiff, upload_geotiff
+    from sqlalchemy import and_, select
+
     from ml.cloud_mask import apply_scl_cloud_mask
     from ml.indices.composite import compute_composite
     from ml.indices.ndre import compute_ndre
@@ -59,27 +56,31 @@ def compute_field_indices(
     end = date.fromisoformat(composite_end)
     field_uuid = uuid.UUID(field_id)
 
-    logger.info(
-        "compute_field_indices: field=%s window=%s–%s", field_id, start, end
-    )
+    logger.info("compute_field_indices: field=%s window=%s–%s", field_id, start, end)
 
     # Load all complete scenes in the compositing window
     with SessionLocal() as db:
-        scenes = db.execute(
-            select(SatelliteScene).where(
-                and_(
-                    SatelliteScene.field_id == field_uuid,
-                    SatelliteScene.status == "complete",
-                    SatelliteScene.acquired_at >= start,
-                    SatelliteScene.acquired_at <= end,
+        scenes = (
+            db.execute(
+                select(SatelliteScene).where(
+                    and_(
+                        SatelliteScene.field_id == field_uuid,
+                        SatelliteScene.status == "complete",
+                        SatelliteScene.acquired_at >= start,
+                        SatelliteScene.acquired_at <= end,
+                    )
                 )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
 
     if not scenes:
         logger.warning(
             "compute_field_indices: no complete scenes for field=%s in %s–%s",
-            field_id, start, end,
+            field_id,
+            start,
+            end,
         )
         return {"ndvi_s3_key": "", "ndre_s3_key": ""}
 
@@ -97,18 +98,26 @@ def compute_field_indices(
         except RuntimeError as exc:
             logger.error(
                 "compute_field_indices: failed to download bands for scene %s: %s",
-                scene.scene_id, exc,
+                scene.scene_id,
+                exc,
             )
             continue
 
         mask = apply_scl_cloud_mask(scl.astype(np.uint8))
-        ndvi_arrays.append(compute_ndvi(b08.astype(np.float32), b04.astype(np.float32), mask))
-        ndre_arrays.append(compute_ndre(b05.astype(np.float32), b04.astype(np.float32), mask))
+        ndvi_arrays.append(
+            compute_ndvi(b08.astype(np.float32), b04.astype(np.float32), mask)
+        )
+        ndre_arrays.append(
+            compute_ndre(b05.astype(np.float32), b04.astype(np.float32), mask)
+        )
         if profile_ref is None:
             profile_ref = profile
 
     if not ndvi_arrays:
-        logger.warning("compute_field_indices: all scene band downloads failed for field=%s", field_id)
+        logger.warning(
+            "compute_field_indices: all scene band downloads failed for field=%s",
+            field_id,
+        )
         return {"ndvi_s3_key": "", "ndre_s3_key": ""}
 
     ndvi_composite = compute_composite(ndvi_arrays, method="median")
@@ -127,11 +136,14 @@ def compute_field_indices(
         if valid.size == 0:
             return float("nan"), float("nan"), float("nan"), 0.0
         pct_valid = valid.size / arr.size * 100
-        return float(np.mean(valid)), float(np.min(valid)), float(np.max(valid)), pct_valid
+        return (
+            float(np.mean(valid)),
+            float(np.min(valid)),
+            float(np.max(valid)),
+            pct_valid,
+        )
 
-    def _save_index(
-        index_type: str, s3_key: str, composite: np.ndarray
-    ) -> None:
+    def _save_index(index_type: str, s3_key: str, composite: np.ndarray) -> None:
         mean, mn, mx, valid_pct = _stats(composite)
         with SessionLocal() as db:
             # Prevent duplicate (unique constraint on field + window + type)
@@ -171,6 +183,8 @@ def compute_field_indices(
 
     logger.info(
         "compute_field_indices: complete for field=%s; ndvi=%s ndre=%s",
-        field_id, ndvi_key, ndre_key,
+        field_id,
+        ndvi_key,
+        ndre_key,
     )
     return {"ndvi_s3_key": ndvi_key, "ndre_s3_key": ndre_key}

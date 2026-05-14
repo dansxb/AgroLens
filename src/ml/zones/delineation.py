@@ -15,7 +15,6 @@ pixels are used for fitting; the cluster labels array preserves NaN positions.
 from __future__ import annotations
 
 import logging
-from typing import Literal
 
 import numpy as np
 from sklearn.cluster import KMeans
@@ -68,8 +67,7 @@ def delineate_zones(
         raise ValueError(f"n_zones must be between 2 and 5, got {n_zones}")
     if ndvi.shape != ndre.shape:
         raise ValueError(
-            f"ndvi and ndre must have the same shape: "
-            f"{ndvi.shape} vs {ndre.shape}"
+            f"ndvi and ndre must have the same shape: " f"{ndvi.shape} vs {ndre.shape}"
         )
 
     valid_mask = ~(np.isnan(ndvi) | np.isnan(ndre))
@@ -100,8 +98,7 @@ def delineate_zones(
     zone_names = _ZONE_LABELS[n_zones]
 
     logger.info(
-        "Zone delineation complete: n_zones=%d, valid_pixels=%d, "
-        "centroids(NDVI)=%s",
+        "Zone delineation complete: n_zones=%d, valid_pixels=%d, " "centroids(NDVI)=%s",
         n_zones,
         n_valid,
         np.round(centroids_ordered[:, 0], 3).tolist(),

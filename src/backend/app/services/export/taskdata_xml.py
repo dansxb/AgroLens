@@ -22,15 +22,13 @@ from __future__ import annotations
 
 import io
 import logging
-import uuid
 import zipfile
-from datetime import datetime, timezone
-from decimal import Decimal
 from typing import Optional
 from xml.etree import ElementTree as ET
 
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
+
 from ml.prescription.engine import DISCLAIMER_DE
 
 logger = logging.getLogger(__name__)
@@ -131,9 +129,9 @@ def build_taskdata_xml(
             "PDV",
             attrib={
                 "A": pdt_id,
-                "B": "7",        # DDI 7 = Volume Per Area
+                "B": "7",  # DDI 7 = Volume Per Area
                 "C": str(rate_ddi7),
-                "D": "1",        # Unit designator (mm³/m²)
+                "D": "1",  # Unit designator (mm³/m²)
             },
         )
 
@@ -146,7 +144,7 @@ def build_taskdata_xml(
             "B": f"AgroLens VRA – {field_name[:20]} – {application_type}",
             "C": pfd_id,
             "D": task_ref or "",
-            "G": "1",            # Task status: planned
+            "G": "1",  # Task status: planned
         },
     )
 

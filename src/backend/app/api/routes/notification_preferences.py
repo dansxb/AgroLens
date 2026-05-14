@@ -6,16 +6,18 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.notification_preference import NotificationPreference
 from app.models.user import User
-from app.schemas.notification_preference import NotificationPreferenceRead, NotificationPreferenceUpdate
+from app.schemas.notification_preference import (
+    NotificationPreferenceRead,
+    NotificationPreferenceUpdate,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +54,9 @@ async def update_notification_preference(
     """Toggle a notification preference on or off."""
     pref = await db.get(NotificationPreference, preference_id)
     if pref is None or pref.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Preference not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Preference not found"
+        )
 
     prev_enabled = pref.enabled
     pref.enabled = body.enabled
@@ -63,7 +67,9 @@ async def update_notification_preference(
         await db.rollback()
         logger.error(
             "update_notification_preference: db error for pref=%s user=%s: %s",
-            preference_id, current_user.id, exc,
+            preference_id,
+            current_user.id,
+            exc,
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -72,6 +78,9 @@ async def update_notification_preference(
 
     logger.info(
         "update_notification_preference: pref=%s user=%s enabled=%s→%s",
-        preference_id, current_user.id, prev_enabled, pref.enabled,
+        preference_id,
+        current_user.id,
+        prev_enabled,
+        pref.enabled,
     )
     return pref

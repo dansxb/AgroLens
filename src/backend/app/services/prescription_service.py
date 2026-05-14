@@ -15,18 +15,18 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date
 from decimal import Decimal
 from typing import Optional
 
 import numpy as np
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
 from app.models.vegetation_index import VegetationIndex
 from app.services.s3_storage import S3StorageService
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from ml.prescription.engine import DISCLAIMER_DE, compute_prescription
 from ml.zones.delineation import delineate_zones
 from ml.zones.zone_filter import filter_minimum_zone_size
@@ -77,7 +77,9 @@ class PrescriptionService:
         )
         ndre_array, _, _ = await self._load_latest_composite(field_id, "ndre")
 
-        zone_map, zone_names, centroids = delineate_zones(ndvi_array, ndre_array, n_zones)
+        zone_map, zone_names, centroids = delineate_zones(
+            ndvi_array, ndre_array, n_zones
+        )
         zone_map = filter_minimum_zone_size(zone_map, centroids, field_area_ha)
 
         # Re-derive actual zone names after filtering (some may have been merged)

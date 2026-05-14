@@ -14,14 +14,13 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID
 
+from app.core.security import get_current_user_payload
+from app.db.session import get_db
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.security import get_current_user_payload
-from app.db.session import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +125,9 @@ async def get_current_user_or_key(
             if user:
                 return user
     except Exception:  # noqa: BLE001
-        pass
+        logger.debug(
+            "get_current_user_or_key: JWT verification failed, trying API key path"
+        )
 
     # --- Fall back to API key lookup ---
     if not token.startswith("agro_sk_"):
@@ -167,7 +168,9 @@ async def get_current_user_or_key(
     result2 = await db.execute(select(User).where(User.id == matched_key.user_id))
     user = result2.scalar_one_or_none()
     if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found."
+        )
 
     return user
 

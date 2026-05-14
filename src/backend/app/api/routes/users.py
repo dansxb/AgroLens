@@ -19,13 +19,12 @@ from __future__ import annotations
 import logging
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import get_current_user, get_db
 from app.core.config import settings
 from app.models.user import User
 from app.schemas.user import UserRead, UserUpdate
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -116,9 +115,7 @@ async def delete_me(
     # ------------------------------------------------------------------
     # 1. Delete from Supabase Auth via Admin API
     # ------------------------------------------------------------------
-    supabase_admin_url = (
-        f"{settings.supabase_url}/auth/v1/admin/users/{user_id_str}"
-    )
+    supabase_admin_url = f"{settings.supabase_url}/auth/v1/admin/users/{user_id_str}"
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
             response = await client.delete(

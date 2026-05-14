@@ -11,9 +11,8 @@ import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from celery import Task
-
 from app.worker.celery_app import celery_app
+from celery import Task
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +42,7 @@ def fetch_field_imagery(self: Task, field_id: str) -> dict[str, int]:
     from app.models.field import Field
     from app.models.satellite_scene import SatelliteScene
     from app.services.s3_storage import upload_geotiff
+
     from ml.sentinel.client import SentinelHubClient, SentinelHubError
 
     logger.info("fetch_field_imagery: starting for field_id=%s", field_id)
@@ -64,6 +64,7 @@ def fetch_field_imagery(self: Task, field_id: str) -> dict[str, int]:
 
         # Extract bounding box from PostGIS geometry
         from geoalchemy2.shape import to_shape
+
         geom = to_shape(field.geometry)
         bbox = list(geom.bounds)  # [minx, miny, maxx, maxy]
 
@@ -91,6 +92,7 @@ def fetch_field_imagery(self: Task, field_id: str) -> dict[str, int]:
         with SessionLocal() as db:
             # Skip if already downloaded
             from sqlalchemy import select
+
             existing = db.execute(
                 select(SatelliteScene).where(
                     SatelliteScene.field_id == uuid.UUID(field_id),
@@ -98,7 +100,9 @@ def fetch_field_imagery(self: Task, field_id: str) -> dict[str, int]:
                 )
             ).scalar_one_or_none()
             if existing:
-                logger.debug("fetch_field_imagery: scene %s already stored, skipping", scene_id)
+                logger.debug(
+                    "fetch_field_imagery: scene %s already stored, skipping", scene_id
+                )
                 continue
 
             # Create a pending record

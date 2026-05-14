@@ -6,16 +6,15 @@ import secrets
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from passlib.context import CryptContext
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.api_key import ApiKey
 from app.models.user import User
 from app.schemas.api_key import ApiKeyCreate, ApiKeyCreated, ApiKeyRead
+from fastapi import APIRouter, Depends, HTTPException, status
+from passlib.context import CryptContext
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api-keys", tags=["api-keys"])
 
@@ -91,7 +90,9 @@ async def revoke_api_key(
     """Revoke (soft-delete) an API key."""
     api_key = await db.get(ApiKey, key_id)
     if api_key is None or api_key.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API key not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="API key not found"
+        )
 
     api_key.revoked = True
     await db.commit()
@@ -115,15 +116,14 @@ async def get_account_usage(
     Phase 5 will read the actual limit from the Subscription model.
     Until then, plan_limit is null and usage_pct is 0.
     """
-    from sqlalchemy import func as sa_func  # noqa: PLC0415
-
     from app.models.farm import Farm  # noqa: PLC0415
     from app.models.field import Field  # noqa: PLC0415
+    from sqlalchemy import func as sa_func  # noqa: PLC0415
 
     result = await db.execute(
-        select(sa_func.coalesce(sa_func.sum(Field.area_ha), 0.0)).join(
-            Farm, Farm.id == Field.farm_id
-        ).where(Farm.user_id == current_user.id)
+        select(sa_func.coalesce(sa_func.sum(Field.area_ha), 0.0))
+        .join(Farm, Farm.id == Field.farm_id)
+        .where(Farm.user_id == current_user.id)
     )
     hectares_used: float = float(result.scalar() or 0.0)
 

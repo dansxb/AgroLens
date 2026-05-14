@@ -18,11 +18,9 @@ from typing import Any, Dict
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from app.core.security import verify_supabase_jwt
 from fastapi import HTTPException
 from jose.exceptions import ExpiredSignatureError, JWTError
-
-from app.core.security import verify_supabase_jwt
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -116,7 +114,6 @@ def test_verify_supabase_jwt_missing_sub() -> None:
 async def test_get_current_user_creates_new_user() -> None:
     """get_current_user creates a new User record when none exists in DB."""
     from app.api.deps import get_current_user
-    from app.core.security import get_current_user_payload
 
     user_uuid = uuid.uuid4()
     test_email = "newfarmer@example.com"

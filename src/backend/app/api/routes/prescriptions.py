@@ -17,10 +17,6 @@ import logging
 import uuid
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import get_current_user, get_db, get_owned_field
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
@@ -34,6 +30,9 @@ from app.schemas.prescription import (
 from app.schemas.spraying_record import SprayingRecordCreate, SprayingRecordRead
 from app.services.prescription_service import PrescriptionService
 from app.services.s3_storage import S3StorageService
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

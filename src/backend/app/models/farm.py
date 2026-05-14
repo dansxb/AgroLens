@@ -14,11 +14,10 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
+from app.db.base_class import Base
 from sqlalchemy import DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from app.models.field import Field

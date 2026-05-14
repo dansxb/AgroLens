@@ -13,12 +13,11 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 
+from app.core.config import settings
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
-
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -19,11 +19,6 @@ import logging
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import Response
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import get_current_user, get_db, get_owned_field
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
@@ -31,6 +26,10 @@ from app.models.user import User
 from app.services.export.pdf_report import build_prescription_pdf
 from app.services.export.shapefile import build_prescription_shapefile
 from app.services.export.taskdata_xml import build_taskdata_xml
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -156,14 +155,18 @@ async def export_taskdata_xml(
     except Exception as exc:
         logger.error(
             "export_taskdata_xml: build failed for field=%s app_type=%s: %s",
-            field_id, app_type, exc,
+            field_id,
+            app_type,
+            exc,
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate TASKDATA.XML.",
         ) from exc
 
-    logger.info("export_taskdata_xml: generated for field=%s app_type=%s", field_id, app_type)
+    logger.info(
+        "export_taskdata_xml: generated for field=%s app_type=%s", field_id, app_type
+    )
     filename = f"TASKDATA_{field.name}_{app_type}.zip".replace(" ", "_")
     return Response(
         content=data,
@@ -199,7 +202,9 @@ async def export_pdf(
     zones, prescriptions = await _load_latest_prescription(field_id, app_type, db)
 
     if not prescriptions:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No prescription found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No prescription found."
+        )
 
     first_pres = prescriptions[0]
     first_zone = zones[0] if zones else None
@@ -222,7 +227,12 @@ async def export_pdf(
             detail=str(exc),
         ) from exc
     except Exception as exc:
-        logger.error("export_pdf: build failed for field=%s app_type=%s: %s", field_id, app_type, exc)
+        logger.error(
+            "export_pdf: build failed for field=%s app_type=%s: %s",
+            field_id,
+            app_type,
+            exc,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate PDF report.",

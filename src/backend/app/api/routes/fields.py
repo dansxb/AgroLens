@@ -26,16 +26,20 @@ import logging
 import uuid
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from geoalchemy2.functions import ST_Area, ST_AsGeoJSON, ST_GeomFromGeoJSON, ST_Transform
-from sqlalchemy import func, select, text
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import get_current_user, get_db, get_owned_field
 from app.models.farm import Farm
 from app.models.field import Field
 from app.models.user import User
 from app.schemas.field import FieldCreate, FieldRead, FieldUpdate
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from geoalchemy2.functions import (
+    ST_Area,
+    ST_AsGeoJSON,
+    ST_GeomFromGeoJSON,
+    ST_Transform,
+)
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +62,7 @@ async def _compute_area_ha(geojson_str: str, db: AsyncSession) -> float:
         Area in hectares as a float, rounded to 1 decimal place.
     """
     result = await db.execute(
-        select(
-            ST_Area(ST_Transform(ST_GeomFromGeoJSON(geojson_str), 3857)) / 10000
-        )
+        select(ST_Area(ST_Transform(ST_GeomFromGeoJSON(geojson_str), 3857)) / 10000)
     )
     area: Optional[float] = result.scalar_one_or_none()
     return round(area or 0.0, 1)
@@ -80,9 +82,7 @@ async def _field_to_read(field: Field, db: AsyncSession) -> FieldRead:
     """
     geometry_dict = None
     if field.geometry is not None:
-        geojson_result = await db.execute(
-            select(ST_AsGeoJSON(field.geometry))
-        )
+        geojson_result = await db.execute(select(ST_AsGeoJSON(field.geometry)))
         geojson_str: Optional[str] = geojson_result.scalar_one_or_none()
         if geojson_str:
             geometry_dict = json.loads(geojson_str)

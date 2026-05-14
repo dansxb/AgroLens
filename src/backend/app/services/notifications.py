@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import logging
 
+from app.core.config import settings
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
-def send_email(to: str, subject: str, html_body: str, from_email: str | None = None) -> bool:
+def send_email(
+    to: str, subject: str, html_body: str, from_email: str | None = None
+) -> bool:
     """Send an HTML email via SendGrid.
 
     Retries once on 5xx transient errors. Returns True on success.

@@ -12,9 +12,8 @@ Usage::
 
 from __future__ import annotations
 
-from celery import Celery
-
 from app.core.config import settings
+from celery import Celery
 
 celery_app: Celery = Celery(
     "agrolens",

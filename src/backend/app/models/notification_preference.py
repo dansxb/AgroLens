@@ -6,12 +6,11 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, func
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.dialects.postgresql import ENUM as PgEnum
-from sqlalchemy.orm import Mapped, mapped_column
-
 from app.db.base_class import Base
+from sqlalchemy import Boolean, DateTime, ForeignKey, func
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 if TYPE_CHECKING:
     pass

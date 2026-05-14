@@ -13,16 +13,15 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import date
 from decimal import Decimal
 
 import numpy as np
-
-from app.worker.celery_app import celery_app
 from app.db.session import SessionLocal
 from app.models.management_zone import ManagementZone
 from app.models.vegetation_index import VegetationIndex
 from app.services.s3_storage import S3StorageService
+from app.worker.celery_app import celery_app
+
 from ml.zones.delineation import delineate_zones
 from ml.zones.zone_filter import filter_minimum_zone_size
 

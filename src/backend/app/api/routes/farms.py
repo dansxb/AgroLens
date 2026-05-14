@@ -15,19 +15,18 @@ Routes registered under prefix ``/api/v1`` in ``main.py``:
 
 from __future__ import annotations
 
-import uuid
 import logging
+import uuid
 from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_db
 from app.models.farm import Farm
 from app.models.field import Field
 from app.models.user import User
 from app.schemas.farm import FarmCreate, FarmRead, FarmUpdate
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -70,9 +69,7 @@ async def list_farms(
     Returns:
         List of :class:`FarmRead` schemas for the user's farms.
     """
-    result = await db.execute(
-        select(Farm).where(Farm.user_id == current_user.id)
-    )
+    result = await db.execute(select(Farm).where(Farm.user_id == current_user.id))
     farms = result.scalars().all()
 
     # Compute field counts in a single query

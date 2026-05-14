@@ -48,8 +48,8 @@ ApplicationType = Literal["fungicide", "herbicide", "insecticide"]
 # Ordered zone labels → multiplier index mapping
 # Zones are ordered Low→High as produced by delineation.py
 _MULTIPLIERS: dict[ApplicationType, list[float]] = {
-    "fungicide":   [0.60, 1.00, 1.30, 1.50],
-    "herbicide":   [0.70, 1.00, 1.20, 1.40],
+    "fungicide": [0.60, 1.00, 1.30, 1.50],
+    "herbicide": [0.70, 1.00, 1.20, 1.40],
     "insecticide": [0.50, 1.00, 1.50, 1.80],
 }
 
@@ -145,8 +145,7 @@ def compute_prescription(
     else:
         # Interpolate index positions to map n_zones entries onto 4-entry table
         indices = [
-            round(i * (len(multiplier_row) - 1) / (n_zones - 1))
-            for i in range(n_zones)
+            round(i * (len(multiplier_row) - 1) / (n_zones - 1)) for i in range(n_zones)
         ]
         selected_multipliers = [multiplier_row[i] for i in indices]
 

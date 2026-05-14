@@ -16,11 +16,11 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, func
-from sqlalchemy.dialects.postgresql import ENUM as PgEnum, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.base_class import Base
+from sqlalchemy import DateTime, ForeignKey, Numeric, Text, func
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.models.field import Field

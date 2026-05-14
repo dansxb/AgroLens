@@ -6,16 +6,15 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
-from sqlalchemy import select
-
 from app.db.session import SessionLocal
+from app.models.field import Field
 from app.models.notification_preference import NotificationPreference
 from app.models.prescription import Prescription
-from app.models.vegetation_index import VegetationIndex
-from app.models.field import Field
 from app.models.user import User
+from app.models.vegetation_index import VegetationIndex
 from app.services.notifications import send_email
 from app.worker.celery_app import celery_app
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +27,21 @@ _STRESS_TEMPLATE = "field_stress_alert.html"
 _STRESS_DEVIATION_THRESHOLD = 0.15  # 15% rolling-average deviation triggers alert
 
 
+def _get_enabled_pref(
+    db: "Session",  # type: ignore[name-defined]
+    user_id: object,
+    notification_type: str,
+) -> "NotificationPreference | None":  # type: ignore[name-defined]
+    """Return a NotificationPreference if it exists and is enabled, else None."""
+    return db.scalar(
+        select(NotificationPreference).where(
+            NotificationPreference.user_id == user_id,
+            NotificationPreference.notification_type == notification_type,
+            NotificationPreference.enabled.is_(True),
+        )
+    )
+
+
 def _render_template(template_name: str, context: dict) -> str:
     """Load and render an email HTML template with simple str.format substitution.
 
@@ -37,7 +51,9 @@ def _render_template(template_name: str, context: dict) -> str:
     """
     import os
 
-    template_dir = os.path.join(os.path.dirname(__file__), "../../../../templates/email")
+    template_dir = os.path.join(
+        os.path.dirname(__file__), "../../../../templates/email"
+    )
     template_path = os.path.normpath(os.path.join(template_dir, template_name))
     try:
         with open(template_path, encoding="utf-8") as fh:
@@ -50,7 +66,9 @@ def _render_template(template_name: str, context: dict) -> str:
         raise
 
 
-@celery_app.task(name="notifications.send_new_vra_map_notification", bind=True, max_retries=3)
+@celery_app.task(
+    name="notifications.send_new_vra_map_notification", bind=True, max_retries=3
+)
 def send_new_vra_map_notification(self, prescription_id: str) -> None:
     """Send an email when a new VRA prescription map is created.
 
@@ -59,7 +77,9 @@ def send_new_vra_map_notification(self, prescription_id: str) -> None:
     with SessionLocal() as db:
         prescription = db.get(Prescription, prescription_id)
         if prescription is None:
-            logger.warning("Prescription %s not found — skipping notification", prescription_id)
+            logger.warning(
+                "Prescription %s not found — skipping notification", prescription_id
+            )
             return
 
         field = db.get(Field, prescription.field_id)
@@ -77,13 +97,7 @@ def send_new_vra_map_notification(self, prescription_id: str) -> None:
         if user is None:
             return
 
-        pref = db.scalar(
-            select(NotificationPreference).where(
-                NotificationPreference.user_id == user.id,
-                NotificationPreference.notification_type == "new_vra_map",
-                NotificationPreference.enabled.is_(True),
-            )
-        )
+        pref = _get_enabled_pref(db, user.id, "new_vra_map")
         if pref is None:
             logger.debug("new_vra_map notifications disabled for user %s", user.id)
             return
@@ -105,7 +119,8 @@ def send_new_vra_map_notification(self, prescription_id: str) -> None:
         if not success:
             logger.warning(
                 "send_new_vra_map_notification: email delivery failed for user=%s prescription=%s",
-                user.id, prescription_id,
+                user.id,
+                prescription_id,
             )
             raise self.retry(exc=RuntimeError("Email delivery failed"), countdown=120)
 
@@ -158,13 +173,7 @@ def check_stress_alerts(self) -> None:
             if user is None:
                 continue
 
-            pref = db.scalar(
-                select(NotificationPreference).where(
-                    NotificationPreference.user_id == user.id,
-                    NotificationPreference.notification_type == "field_stress_alert",
-                    NotificationPreference.enabled.is_(True),
-                )
-            )
+            pref = _get_enabled_pref(db, user.id, "field_stress_alert")
             if pref is None:
                 continue
 
@@ -180,16 +189,23 @@ def check_stress_alerts(self) -> None:
                     },
                 )
             except (FileNotFoundError, KeyError) as exc:
-                logger.error("check_stress_alerts: template error for field %s: %s", field.id, exc)
+                logger.error(
+                    "check_stress_alerts: template error for field %s: %s",
+                    field.id,
+                    exc,
+                )
                 continue
 
             success = send_email(to=user.email, subject=_STRESS_SUBJECT, html_body=html)
             if success:
                 logger.info(
-                    "Stress alert sent for field %s (deviation=%.1f%%)", field.id, deviation * 100
+                    "Stress alert sent for field %s (deviation=%.1f%%)",
+                    field.id,
+                    deviation * 100,
                 )
             else:
                 logger.warning(
                     "check_stress_alerts: email delivery failed for user=%s field=%s",
-                    user.id, field.id,
+                    user.id,
+                    field.id,
                 )
