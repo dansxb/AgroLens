@@ -154,7 +154,7 @@ function SatelliteIllustration() {
       {/* EU / Copernicus badge */}
       <rect x="290" y="195" width="100" height="36" rx="6" fill="#1e3a5f" opacity="0.9" />
       <text x="340" y="209" textAnchor="middle" fill="#93c5fd" fontSize="8" fontFamily="monospace" fontWeight="600">Copernicus</text>
-      <text x="340" y="221" textAnchor="middle" fill="#93c5fd" fontSize="7" fontFamily="monospace">EU-Programm · kostenlos</text>
+      <text x="340" y="221" textAnchor="middle" fill="#93c5fd" fontSize="7" fontFamily="monospace">EU-Copernicus-Programm</text>
       <text x="340" y="230" textAnchor="middle" fill="#60a5fa" fontSize="7" fontFamily="monospace">Sentinel-2</text>
     </svg>
   );
@@ -481,10 +481,8 @@ export default function WieEsFunktioniertPage() {
                   <div className="space-y-4 text-base leading-relaxed text-gray-600">
                     <p>
                       Der europäische Sentinel-2-Satellit fliegt alle 5 bis 10 Tage über
-                      Deutschland und fotografiert die Felder. Diese Aufnahmen sind kostenlos
-                      verfügbar — finanziert durch die EU im Rahmen des Copernicus-Programms.
-                      AgroLens lädt die Bilder automatisch herunter, sobald eine neue Aufnahme
-                      vorliegt.
+                      Deutschland und fotografiert die Felder. AgroLens ruft diese
+                      Satellitenaufnahmen automatisch ab, sobald eine neue Aufnahme vorliegt.
                     </p>
                     <p>
                       Anders als normale Fotos sieht der Satellit auch Wellenlängen, die für
