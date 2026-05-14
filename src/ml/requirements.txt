@@ -1,1 +1,18 @@
-# ML Python dependencies (pinned) — Task 2.1
+# ============================================================
+# AgroLens ML — Python Dependencies
+# These packages are already included in backend/requirements.txt.
+# The ML module runs inside the backend Docker container —
+# no separate install is needed.
+# This file is a reference for anyone running ml/ code standalone.
+# ============================================================
+
+numpy==1.26.*
+rasterio==1.3.*
+scikit-learn==1.4.*
+sentinelhub==3.10.*
+geopandas==0.14.*
+shapely==2.0.*
+pyproj==3.6.*
+matplotlib==3.8.*
+pytest==8.2.*
+pytest-asyncio==0.23.*
