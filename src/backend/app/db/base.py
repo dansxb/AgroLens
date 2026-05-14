@@ -37,6 +37,9 @@ from app.models.prescription import Prescription  # noqa: F401
 from app.models.satellite_scene import SatelliteScene  # noqa: F401
 from app.models.spraying_record import SprayingRecord  # noqa: F401
 
+# Phase 5 models
+from app.models.subscription import Subscription  # noqa: F401
+
 # Phase 1 models
 from app.models.user import User  # noqa: F401
 from app.models.vegetation_index import VegetationIndex  # noqa: F401
@@ -48,10 +51,3 @@ from app.models.vegetation_index import VegetationIndex  # noqa: F401
 # Once a phase is complete and all classes are defined, the try/except can
 # be removed for that block.
 # ---------------------------------------------------------------------------
-
-
-# Phase 5 models
-try:
-    from app.models.subscription import Subscription  # noqa: F401
-except ImportError as _e:
-    logger.debug("Phase 5 models not yet implemented: %s", _e)

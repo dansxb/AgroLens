@@ -18,6 +18,7 @@ import uuid
 from typing import List
 
 from app.api.deps import get_current_user, get_db, get_owned_field
+from app.core.limits import check_prescription_limit
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
 from app.models.spraying_record import SprayingRecord
@@ -131,6 +132,9 @@ async def create_prescription(
         HTTPException: 422 if no composite imagery exists for the field.
     """
     field = await get_owned_field(field_id, current_user, db)
+
+    # Enforce plan-based prescription access before running the pipeline
+    await check_prescription_limit(current_user, db)
 
     s3 = S3StorageService()
     service = PrescriptionService(db, s3)

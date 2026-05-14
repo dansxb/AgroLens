@@ -27,6 +27,7 @@ import uuid
 from typing import List, Optional
 
 from app.api.deps import get_current_user, get_db, get_owned_field
+from app.core.limits import check_field_count_limit, check_ha_limit
 from app.models.farm import Farm
 from app.models.field import Field
 from app.models.user import User
@@ -200,6 +201,10 @@ async def create_field(
 
     # Compute area via PostGIS before inserting
     area_ha = await _compute_area_ha(geojson_str, db)
+
+    # Enforce plan-based usage limits before creating the field
+    await check_field_count_limit(current_user, db)
+    await check_ha_limit(current_user, area_ha, db)
 
     field = Field(
         id=uuid.uuid4(),
