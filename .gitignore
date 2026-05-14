@@ -1,0 +1,73 @@
+# Secrets & Environment
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+**/*.egg-info/
+dist/
+build/
+venv/
+.venv/
+**/venv/
+**/.venv/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+celerybeat-schedule
+celerybeat.pid
+
+# Node.js / Frontend
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Geospatial / Satellite imagery
+*.tif
+*.tiff
+*.geotiff
+*.GeoTIFF
+*.img
+*.jp2
+
+# Docker
+docker-compose.override.yml
+
+# macOS
+.DS_Store
+**/.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Obsidian workspace state (personal, not shared)
+obsidian/.obsidian/workspace.json
+obsidian/.obsidian/workspace-mobile.json

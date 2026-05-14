@@ -1,0 +1,28 @@
+# =============================================================
+# AgroLens — docker-compose Developer Overrides Example
+# Copy this file to docker-compose.override.yml (gitignored)
+# and customise for your local environment.
+# =============================================================
+
+version: "3.9"
+
+services:
+
+  # Example: expose Postgres on a non-default port to avoid conflicts
+  # postgres:
+  #   ports:
+  #     - "5433:5432"
+
+  # Example: mount a local .env file with developer-specific secrets
+  # backend:
+  #   env_file:
+  #     - ./backend/.env.local
+
+  # Example: attach a debugger (debugpy) to the backend
+  # backend:
+  #   command: >
+  #     python -m debugpy --listen 0.0.0.0:5678 -m uvicorn main:app
+  #     --reload --host 0.0.0.0 --port 8000
+  #   ports:
+  #     - "8000:8000"
+  #     - "5678:5678"

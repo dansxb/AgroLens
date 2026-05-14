@@ -1,0 +1,124 @@
+============================================================
+AgroLens — Session Start Commands
+Alles was du am Anfang einer neuen Session eingeben musst.
+============================================================
+
+------------------------------------------------------------
+1. TERMINAL (zsh) — immer als erstes
+------------------------------------------------------------
+
+# Python-Umgebung aktivieren (für lokale Entwicklung / VS Code)
+conda activate agrolens
+
+# Zum Projekt navigieren
+cd "/Users/danielschaller/Desktop/CS Haus & Garten/Winter…/Claude Agents/src"
+
+# Docker-Stack starten
+docker compose up --build
+
+# In einem ZWEITEN Terminal-Fenster, sobald alle Services "healthy" sind:
+cd "/Users/danielschaller/Desktop/CS Haus & Garten/Winter…/Claude Agents/src"
+docker compose exec backend alembic upgrade head
+# (Nur beim allerersten Start oder nach neuen Migrations-Dateien nötig)
+
+
+------------------------------------------------------------
+2. VS CODE — beim ersten Öffnen des Projekts einmalig
+------------------------------------------------------------
+
+Cmd+Shift+P → "Python: Select Interpreter"
+→ /opt/anaconda3/envs/agrolens/bin/python  (Python 3.11, agrolens)
+
+Projekt-Ordner öffnen:
+/Users/danielschaller/Desktop/CS Haus & Garten/Winter…/Claude Agents/
+
+
+------------------------------------------------------------
+3. OBSIDIAN — vault öffnen
+------------------------------------------------------------
+
+Vault-Pfad: /Users/danielschaller/Documents/AgroLens/
+
+Obsidian öffnen → diesen Vault wählen.
+Claude lädt den Vault-Kontext automatisch beim Session-Start
+(via SessionStart-Hook in ~/.claude/settings.json).
+Keine weiteren Schritte nötig.
+
+
+------------------------------------------------------------
+4. BROWSER — zum Testen
+------------------------------------------------------------
+
+Frontend:    http://localhost:3000
+API-Docs:    http://localhost:8000/docs
+Health:      http://localhost:8000/health
+
+
+------------------------------------------------------------
+5. CLAUDE CODE — was Claude automatisch bekommt
+------------------------------------------------------------
+
+Beim Start jeder Claude-Session lädt der Hook automatisch:
+  - Memory/Context.md        (Projektstand + Key Rules)
+  - Memory/Quick Reference.md (Import-Regeln, Env-Vars, Docker-Commands)
+  - Offene Phase-5-Tasks     (aus Tasks/Phase 5 Board.md)
+
+Claude liest außerdem HANDOFF.md am Session-Start wenn du sagst:
+  "Lies die HANDOFF.md und mach weiter"
+
+Während der Session wird automatisch geloggt welche Dateien
+geändert wurden → Memory/Session Changes.md
+
+
+------------------------------------------------------------
+6. DOCKER-BEFEHLE (häufig gebraucht)
+------------------------------------------------------------
+
+# Logs eines Services anschauen
+docker compose logs -f backend
+docker compose logs -f celery_worker
+docker compose logs -f frontend
+
+# Einzelnen Service neu starten
+docker compose restart backend
+
+# Direkt in die Datenbank
+docker compose exec postgres psql -U agrolens -d agrolens_dev
+
+# Alles stoppen und Volumes löschen (kompletter Reset)
+docker compose down -v
+
+
+------------------------------------------------------------
+7. FALLS DOCKER BUILD FEHLER AUFTRETEN
+------------------------------------------------------------
+
+Fehler: "No module named pkg_resources"
+→ Dockerfile muss haben:
+   RUN pip install "setuptools<81" pip --upgrade && \
+       pip install --prefix=/install -r requirements.txt
+
+Fehler: "npm ci" failing
+→ Dockerfile frontend deps stage:
+   if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+Fehler: rasterio baut nicht
+→ Builder stage braucht: libgdal-dev libgeos-dev libproj-dev gdal-bin
+
+
+------------------------------------------------------------
+8. AGENT-TEAM (für Claude)
+------------------------------------------------------------
+
+Agents befinden sich in:
+.claude/agents/ceo.md
+.claude/agents/planner.md
+.claude/agents/software-developer.md
+.claude/agents/checker.md
+.claude/agents/landwirt-validator.md
+
+Phase-Freigabe nur wenn:
+  Checker          → APPROVED
+  Landwirt-Validator → FREIGEGEBEN
+
+============================================================

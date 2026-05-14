@@ -1,0 +1,43 @@
+{
+  "name": "agrolens-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "@mapbox/mapbox-gl-draw": "^1.4.3",
+    "@mapbox/togeojson": "^0.16.2",
+    "@sentry/nextjs": "^7.119.0",
+    "@stripe/stripe-js": "^3.5.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.43.4",
+    "@types/mapbox-gl": "^3.1.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.376.0",
+    "mapbox-gl": "^3.4.0",
+    "next": "14.2.3",
+    "next-pwa": "^5.6.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.51.5",
+    "recharts": "^2.12.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.4.5"
+  }
+}

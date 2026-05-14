@@ -1,0 +1,282 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 LucidaGrande;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 # AgroLens \'97 Zusammenfassung\
+\
+AgroLens ist ein SaaS-Startup im Bereich Precision Agriculture. Die Idee dahinter ist, Landwirten zu helfen, weniger Pestizide zu verwenden, indem Satellitenbilder mit KI analysiert werden. Statt ein komplettes Feld gleichm\'e4\'dfig zu bespr\'fchen, erkennt AgroLens genau, welche Bereiche mehr oder weniger Behandlung ben\'f6tigen. Dadurch sparen Landwirte Geld, reduzieren Chemikalien und schonen die Umwelt. Dieses Prinzip nennt sich Variable Rate Application (VRA).\
+\
+Das Gesch\'e4ftsmodell basiert auf einem Abo-System pro Hektar \'fcberwachter Fl\'e4che.\
+\
+## Wie das Projekt aufgebaut wurde\
+\
+Das Projekt wurde nicht von einer einzelnen KI erstellt, sondern von einem Team aus vier spezialisierten KI-Agenten, die wie eine echte Firma zusammenarbeiten:\
+\
+CEO 
+\f1 \uc0\u8594 
+\f0  Planner 
+\f1 \uc0\u8594 
+\f0  Software Developer 
+\f1 \uc0\u8594 
+\f0  Checker\
+\
+Jeder Agent hat eine eigene Rolle:\
+\
+* Der CEO analysiert Markt und Business\
+* Der Planner erstellt den Entwicklungsplan\
+* Der Developer schreibt den Code\
+* Der Checker pr\'fcft Qualit\'e4t und Sicherheit\
+\
+Die Agenten sind als Dateien in `.claude/agents/` definiert und k\'f6nnen sp\'e4ter wiederverwendet werden.\
+\
+---\
+\
+# Die vier Agenten\
+\
+## 1. CEO-Agent\
+\
+Der CEO-Agent hat den Markt analysiert und die komplette Gesch\'e4ftsstrategie entwickelt.\
+\
+Wichtige Erkenntnisse:\
+\
+* Der Markt f\'fcr Precision Agriculture ist heute etwa 11,7 Milliarden USD gro\'df und w\'e4chst stark.\
+* AgroLens hat einen Kostenvorteil, weil kostenlose Sentinel-2 Satellitendaten der ESA verwendet werden.\
+* Zielgruppe zuerst: mittelgro\'dfe europ\'e4ische Getreidebetriebe.\
+* Preisidee: etwa 8 \'80 pro Hektar pro Jahr.\
+* Konkurrenz wie Farmers Edge oder Bayer/Climate wurden analysiert.\
+\
+Zus\'e4tzlich definierte der CEO 16 konkrete MVP-Funktionen f\'fcr Version 1.\
+\
+---\
+\
+## 2. Planner-Agent\
+\
+Der Planner wandelte die Business-Strategie in einen technischen Entwicklungsplan um.\
+\
+Er erstellte:\
+\
+* 28 Aufgaben\
+* 6 Entwicklungsphasen\
+* komplette Projektstruktur mit 162 Dateien\
+\
+Jede Aufgabe beschreibt:\
+\
+* was gebaut werden muss\
+* welche Dateien betroffen sind\
+* Abh\'e4ngigkeiten\
+* wie man \'fcberpr\'fcft ob es funktioniert\
+\
+---\
+\
+## 3. Software-Developer-Agent\
+\
+Der Developer setzte Phase 0 technisch um und schrieb die Basis des gesamten Projekts.\
+\
+Regeln:\
+\
+* saubere Python-Standards\
+* Type Hints\
+* Dokumentation f\'fcr Funktionen\
+* keine API-Keys im Code\
+* automatische Formatierung\
+\
+Er baute:\
+\
+* Backend-Struktur\
+* Frontend-Struktur\
+* Datenbank-Setup\
+* Docker-Umgebung\
+* Security- und Config-System\
+* Landingpage\
+* API-Grundger\'fcst\
+\
+Viele sp\'e4tere Features sind aktuell noch Platzhalter (\'84Stubs\'93).\
+\
+---\
+\
+## 4. Checker-Agent\
+\
+Der Checker \'fcberpr\'fcfte alle Ergebnisse auf:\
+\
+* Sicherheit\
+* Codequalit\'e4t\
+* Architektur\
+* Business-Alignment\
+\
+Er fand:\
+\
+* 2 kritische Probleme (sofort gefixt)\
+* 1 hohes Problem\
+* 3 mittlere Probleme\
+\
+Status aktuell:\
+\'84NEEDS CHANGES\'93 
+\f1 \uc0\u8594 
+\f0  Phase 0 ist fast fertig, aber kleine Dinge m\'fcssen noch angepasst werden.\
+\
+---\
+\
+# Technischer Aufbau des Projekts\
+\
+Das Projekt besteht aus vier Hauptbereichen:\
+\
+## Backend (FastAPI / Python)\
+\
+Das Backend ist die Serverlogik.\
+\
+Aufgaben:\
+\
+* API bereitstellen\
+* Datenbank verwalten\
+* Benutzer authentifizieren\
+* KI-Jobs starten\
+\
+Wichtige Technologien:\
+\
+* FastAPI\
+* PostgreSQL\
+* PostGIS\
+* Supabase Auth\
+* Celery\
+\
+---\
+\
+## Frontend (Next.js / TypeScript)\
+\
+Das Frontend ist die Website f\'fcr die Farmer.\
+\
+Aktuell vorhanden:\
+\
+* Landingpage\
+* Login-/Signup-System\
+* API-Anbindung\
+\
+---\
+\
+## ML-Pipeline (KI & Satellitendaten)\
+\
+Dieser Bereich wird sp\'e4ter das Herzst\'fcck des Produkts.\
+\
+Geplante Funktionen:\
+\
+* Sentinel-2 Satellitenbilder laden\
+* NDVI berechnen\
+* Felder analysieren\
+* Zonen mit unterschiedlichem Pestizidbedarf erstellen\
+* Prescription Maps generieren\
+\
+Aktuell sind diese Dateien noch Platzhalter.\
+\
+---\
+\
+## Infrastruktur\
+\
+Die Infrastruktur basiert auf Docker.\
+\
+Mit einem einzigen Befehl startet das gesamte System:\
+\
+* Datenbank\
+* Backend\
+* Frontend\
+* Redis\
+* Celery Worker\
+* Scheduler\
+\
+Dadurch funktioniert das Projekt auf jedem Rechner gleich.\
+\
+---\
+\
+# Wichtige Technologien einfach erkl\'e4rt\
+\
+## Docker\
+\
+Container-System, das alle Services automatisch startet.\
+\
+## PostgreSQL + PostGIS\
+\
+Datenbank mit Karten- und GPS-Unterst\'fctzung.\
+\
+## Supabase\
+\
+Login- und Benutzerverwaltung.\
+\
+## Celery\
+\
+F\'fchrt langsame KI-Aufgaben im Hintergrund aus.\
+\
+## Alembic\
+\
+Verwaltet Datenbank\'e4nderungen und Migrationen.\
+\
+---\
+\
+# Aktueller Fortschritt\
+\
+## Phase 0 \'97 Infrastruktur & Grundsystem\
+\
+Status: Fast abgeschlossen\
+\
+Bereits gebaut:\
+\
+* komplette Projektstruktur\
+* Backend-Framework\
+* Frontend-Basis\
+* Docker-System\
+* Datenbankanbindung\
+* Security-Setup\
+\
+Noch offen:\
+\
+* kleine Sicherheitsfixes\
+* Datenbankmigration testen\
+* Preisstrategie final kl\'e4ren\
+\
+---\
+\
+# Kommende Phasen\
+\
+## Phase 1\
+\
+* Benutzerkonten\
+* Farm- und Feldmodelle\
+* Authentifizierung erweitern\
+\
+## Phase 2\
+\
+* Satellitenbilder laden\
+* NDVI-Berechnung\
+\
+## Phase 3\
+\
+* KI f\'fcr Spr\'fchkarten\
+* Variable Rate Maps\
+\
+## Phase 4\
+\
+* Dashboard mit Kartenansicht\
+\
+## Phase 5\
+\
+* Stripe-Abos & Billing\
+\
+---\
+\
+# Ziel des Endprodukts\
+\
+Am Ende soll ein echter Landwirt:\
+\
+1. Sich einloggen k\'f6nnen\
+2. Seine Felder auf einer Karte einzeichnen\
+3. Satellitendaten analysieren lassen\
+4. Automatisch eine pr\'e4zise Pestizidkarte erhalten\
+\
+Dadurch:\
+\
+* weniger Pestizide\
+* geringere Kosten\
+* bessere Umweltbilanz\
+* datengetriebene Landwirtschaft\
+}

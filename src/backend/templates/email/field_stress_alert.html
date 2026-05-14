@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stresswarnung für Ihr Feld</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }}
+    .wrapper {{ max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }}
+    .header {{ background: #dc2626; padding: 32px 40px; text-align: center; }}
+    .header h1 {{ color: #ffffff; margin: 0; font-size: 22px; }}
+    .body {{ padding: 32px 40px; color: #374151; }}
+    .body h2 {{ font-size: 18px; margin-top: 0; }}
+    .alert-box {{ background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px 20px; border-radius: 4px; margin: 24px 0; }}
+    .alert-box p {{ margin: 4px 0; font-size: 14px; color: #991b1b; }}
+    .cta {{ text-align: center; margin: 32px 0; }}
+    .cta a {{ background: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block; }}
+    .footer {{ background: #f9fafb; padding: 20px 40px; text-align: center; font-size: 12px; color: #9ca3af; }}
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>AgroLens — Stresswarnung</h1>
+    </div>
+    <div class="body">
+      <h2>Ungewöhnlicher NDVI-Rückgang erkannt</h2>
+      <p>Das System hat für Ihr Feld <strong>{field_name}</strong> einen signifikanten Vegetationsstress festgestellt.</p>
+      <div class="alert-box">
+        <p><strong>Feld:</strong> {field_name}</p>
+        <p><strong>Aktueller NDVI:</strong> {ndvi_latest}</p>
+        <p><strong>30-Tage-Mittelwert:</strong> {ndvi_mean}</p>
+        <p><strong>Abweichung:</strong> &minus;{deviation_pct}%</p>
+        <p><strong>Erkannt am:</strong> {date}</p>
+      </div>
+      <p>
+        Eine Abweichung von mehr als 15&nbsp;% vom 30-Tage-Durchschnitt deutet auf möglichen
+        Trockenstress, Schädlingsbefall oder Nährstoffmangel hin. Wir empfehlen eine Feldbegehung.
+      </p>
+      <div class="cta">
+        <a href="https://app.agrolens.de/dashboard">Feld analysieren</a>
+      </div>
+      <p style="font-size:13px; color:#6b7280;">
+        Wenn Sie keine Benachrichtigungen mehr erhalten möchten, können Sie diese in Ihren
+        <a href="https://app.agrolens.de/dashboard/settings/notifications" style="color:#dc2626;">Benachrichtigungseinstellungen</a> deaktivieren.
+      </p>
+    </div>
+    <div class="footer">
+      &copy; 2026 AgroLens — Präzisionslandwirtschaft für Deutschland
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+# ML Python dependencies (pinned) — Task 2.1
