@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { captureException } from "@/lib/sentry";
 
 interface Props {
   error: Error & { digest?: string };
@@ -9,8 +10,7 @@ interface Props {
 
 export default function GlobalError({ error, reset }: Props) {
   useEffect(() => {
-    // Log to console in development; swap for Sentry.captureException in production
-    console.error("Global error:", error);
+    captureException(error, { digest: error.digest ?? "" });
   }, [error]);
 
   return (

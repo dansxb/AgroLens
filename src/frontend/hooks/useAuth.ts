@@ -60,11 +60,18 @@ export function useAuth(): UseAuthReturn {
 
     // Fetch initial session (handles page refresh without waiting for the
     // auth state change event).
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: currentSession } }) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Auth service unreachable — surface unauthenticated state so the UI
+        // can redirect to /login rather than hanging on the loading spinner.
+        setLoading(false);
+      });
 
     // Subscribe to auth state changes (sign in, sign out, token refresh).
     const {
