@@ -16,7 +16,7 @@ Project root: `/Users/danielschaller/Desktop/CS Haus & Garten/Winter…/Claude A
 |----------|------|-------|
 | `SECRET_KEY` | `backend/.env` | Generated 64-char hex |
 | `SUPABASE_URL` | `backend/.env` | `https://feoohtmphywquwzonpwq.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | `backend/.env` | `sb_secret_jyE7…` |
+| `SUPABASE_SERVICE_ROLE_KEY` | `backend/.env` | *(in .env gesetzt)* |
 | `NEXT_PUBLIC_SUPABASE_URL` | `frontend/.env` | `https://feoohtmphywquwzonpwq.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `frontend/.env` | `sb_publishable_WM27…` |
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | `frontend/.env` | `pk.eyJ1…` |
