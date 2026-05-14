@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects.postgresql import ENUM as PgEnum, UUID
-
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
+from sqlalchemy.dialects.postgresql import UUID
 
 revision: str = "0004"
 down_revision: str | None = "0003"
@@ -54,7 +54,12 @@ def upgrade() -> None:
     # ------------------------------------------------------------------
     _create_enum(
         "zonelabel",
-        "Low", "Medium-Low", "Medium", "Medium-High", "High", "Very High",
+        "Low",
+        "Medium-Low",
+        "Medium",
+        "Medium-High",
+        "High",
+        "Very High",
     )
     _create_enum("applicationtype", "fungicide", "herbicide", "insecticide")
 
@@ -79,7 +84,12 @@ def upgrade() -> None:
         sa.Column(
             "zone_label",
             PgEnum(
-                "Low", "Medium-Low", "Medium", "Medium-High", "High", "Very High",
+                "Low",
+                "Medium-Low",
+                "Medium",
+                "Medium-High",
+                "High",
+                "Very High",
                 name="zonelabel",
                 create_type=False,
             ),
@@ -150,7 +160,13 @@ def upgrade() -> None:
         ),
         sa.Column(
             "application_type",
-            PgEnum("fungicide", "herbicide", "insecticide", name="applicationtype", create_type=False),
+            PgEnum(
+                "fungicide",
+                "herbicide",
+                "insecticide",
+                name="applicationtype",
+                create_type=False,
+            ),
             nullable=False,
         ),
         sa.Column("base_rate_l_ha", sa.Numeric(10, 4), nullable=False),

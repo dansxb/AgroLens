@@ -26,7 +26,8 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects.postgresql import ENUM as PgEnum, UUID
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
+from sqlalchemy.dialects.postgresql import UUID
 
 # ---------------------------------------------------------------------------
 # Revision identifiers
@@ -104,7 +105,10 @@ def upgrade() -> None:
         sa.Column(
             "status",
             PgEnum(
-                "pending", "processing", "complete", "failed",
+                "pending",
+                "processing",
+                "complete",
+                "failed",
                 name="scenestatus",
                 create_type=False,
             ),
@@ -229,7 +233,9 @@ def upgrade() -> None:
         sa.Column(
             "status",
             PgEnum(
-                "running", "complete", "failed",
+                "running",
+                "complete",
+                "failed",
                 name="pipelinestatus",
                 create_type=False,
             ),
@@ -249,9 +255,13 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop satellite_scenes, vegetation_indices, and pipeline_runs tables."""
-    op.execute(sa.text("DROP INDEX IF EXISTS ix_vegetation_indices_field_composite_end"))
+    op.execute(
+        sa.text("DROP INDEX IF EXISTS ix_vegetation_indices_field_composite_end")
+    )
     op.drop_index("ix_pipeline_runs_run_at", table_name="pipeline_runs")
-    op.drop_index("ix_satellite_scenes_field_id_acquired_at", table_name="satellite_scenes")
+    op.drop_index(
+        "ix_satellite_scenes_field_id_acquired_at", table_name="satellite_scenes"
+    )
 
     op.drop_table("pipeline_runs")
     op.drop_table("vegetation_indices")
