@@ -45,12 +45,12 @@ function LeafMark({ className }: { className?: string }): React.ReactElement {
   );
 }
 
-/** Key statistics shown in the brand panel. */
-const STATS = [
-  { value: "127+", label: "Betriebe in Deutschland" },
-  { value: "38.000 ha", label: "analysierte Fläche" },
-  { value: "31%", label: "Ø Pestizidreduktion" },
-  { value: "€2,3M", label: "Einsparungen gesamt" },
+/** Feature highlights shown in the brand panel. */
+const FEATURES = [
+  { label: "Sentinel-2-Satellitenanalyse alle 5–10 Tage" },
+  { label: "ISOBUS-kompatible Ausbringungskarten (TASKDATA.XML)" },
+  { label: "§67 PflSchG — vollständiges Ausbringungsprotokoll" },
+  { label: "DSGVO-konform · Daten ausschließlich in der EU" },
 ] as const;
 
 /**
@@ -79,26 +79,32 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.ReactEl
           <span className="text-xl font-bold tracking-tight">AgroLens</span>
         </Link>
 
-        {/* Middle: testimonial + stats */}
+        {/* Middle: value proposition + features */}
         <div>
-          <blockquote className="text-2xl font-bold leading-snug text-white">
-            &ldquo;Wir sparen €38 pro Hektar und haben unseren Pestizideinsatz
-            um 31&nbsp;% reduziert.&rdquo;
-          </blockquote>
-          <p className="mt-4 text-sm text-agrolens-400">
-            — Klaus M., Landwirt aus Bayern, 180 ha
+          <p className="text-2xl font-bold leading-snug text-white">
+            Präzise Ausbringungskarten aus Satellitendaten —
+            automatisch, ISOBUS-kompatibel, EU-konform.
           </p>
 
-          <div className="mt-12 grid grid-cols-2 gap-6">
-            {STATS.map((stat) => (
-              <div key={stat.label}>
-                <p className="text-2xl font-extrabold text-agrolens-300">
-                  {stat.value}
-                </p>
-                <p className="mt-0.5 text-xs text-agrolens-500">{stat.label}</p>
-              </div>
+          <ul className="mt-10 space-y-4">
+            {FEATURES.map((feature) => (
+              <li key={feature.label} className="flex items-start gap-3">
+                <svg
+                  className="mt-0.5 h-5 w-5 flex-shrink-0 text-agrolens-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm text-agrolens-300">{feature.label}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
 
         {/* Bottom: ESA attribution */}
