@@ -19,7 +19,7 @@ export default function FieldsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const farms = await apiClient.get<Farm[]>("/api/v1/farms");
+        const farms = await apiClient.get<Farm[]>("/api/v1/farms/");
         const allFields = await Promise.all(farms.map((f) => getFields(f.id)));
         setFields(allFields.flat());
       } catch (err: unknown) {

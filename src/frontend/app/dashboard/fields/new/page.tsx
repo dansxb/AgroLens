@@ -44,10 +44,17 @@ export default function NewFieldPage() {
 
   useEffect(() => {
     apiClient
-      .get<Farm[]>("/api/v1/farms")
-      .then((data) => {
-        setFarms(data);
-        if (data.length > 0) setFarmId(data[0].id);
+      .get<Farm[]>("/api/v1/farms/")
+      .then(async (data) => {
+        if (data.length === 0) {
+          // Auto-create a default farm for new users
+          const newFarm = await apiClient.post<Farm>("/api/v1/farms/", { name: "Mein Betrieb" });
+          setFarms([newFarm]);
+          setFarmId(newFarm.id);
+        } else {
+          setFarms(data);
+          setFarmId(data[0].id);
+        }
       })
       .catch(() => setLoadError("Betriebe konnten nicht geladen werden."));
   }, []);

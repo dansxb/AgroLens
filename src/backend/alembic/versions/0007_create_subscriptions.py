@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
 from sqlalchemy.dialects.postgresql import UUID
 
 revision: str = "0007"
@@ -18,7 +19,8 @@ depends_on = None
 
 def upgrade() -> None:
     """Create the subscriptions table with plantype and subscriptionstatus enums."""
-    # Create enum types idempotently (same pattern as migration 0004)
+    # Create enum types idempotently — DO block handles pre-existing types,
+    # PgEnum(create_type=False) tells SQLAlchemy not to emit CREATE TYPE DDL.
     op.execute("""
         DO $$ BEGIN
             CREATE TYPE plantype AS ENUM ('basis', 'starter', 'farmer', 'pro');
@@ -48,26 +50,26 @@ def upgrade() -> None:
         ),
         sa.Column(
             "plan",
-            sa.Enum(
+            PgEnum(
                 "basis",
                 "starter",
                 "farmer",
                 "pro",
                 name="plantype",
-                create_existing_type=False,
+                create_type=False,
             ),
             nullable=False,
             server_default="basis",
         ),
         sa.Column(
             "status",
-            sa.Enum(
+            PgEnum(
                 "trialing",
                 "active",
                 "past_due",
                 "canceled",
                 name="subscriptionstatus",
-                create_existing_type=False,
+                create_type=False,
             ),
             nullable=False,
             server_default="active",

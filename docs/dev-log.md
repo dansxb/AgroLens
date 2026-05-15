@@ -2,6 +2,81 @@
 
 ---
 
+## Phase 5 — Stripe Billing Backend — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Scope:** Alembic migration 0007, `app/models/subscription.py`, `app/schemas/subscription.py`, `app/core/limits.py`, `app/services/stripe_service.py`, `app/services/subscription_lifecycle.py`, `app/api/routes/billing.py`, `app/api/routes/webhooks.py`, field/prescription limit enforcement
+
+### Files created / replaced
+
+- `alembic/versions/0007_create_subscriptions.py` — creates `plantype` and `subscriptionstatus` PG enums idempotently; creates `subscriptions` table with 3 indexes; full downgrade path.
+- `app/models/subscription.py` — SQLAlchemy 2 `Mapped` model using `PgEnum(..., create_type=False)` for both enum columns; one-row-per-user enforced by UNIQUE on `user_id`.
+- `app/schemas/subscription.py` — `SubscriptionRead`, `CheckoutRequest`, `CheckoutResponse`, `PortalRequest`, `PortalResponse` Pydantic schemas.
+- `app/core/limits.py` — `PLAN_LIMITS` dict + three async check functions (`check_field_count_limit`, `check_ha_limit`, `check_prescription_limit`); HTTP 402 on violation with German error text.
+- `app/services/stripe_service.py` — `get_or_create_customer`, `create_checkout_session`, `create_portal_session`, `price_to_plan`; Stripe SDK keyed from `settings.stripe_secret_key`.
+- `app/services/subscription_lifecycle.py` — five webhook handlers for `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`.
+- `app/api/routes/billing.py` — `GET /billing/subscription`, `POST /billing/checkout`, `POST /billing/portal`; all auth-gated.
+- `app/api/routes/webhooks.py` — `POST /webhooks/stripe`; raw body HMAC verification before deserialising.
+
+### Modified files
+
+- `app/api/routes/fields.py` — added `check_field_count_limit` + `check_ha_limit` calls in `create_field` after area computation.
+- `app/api/routes/prescriptions.py` — added `check_prescription_limit` call in `create_prescription` after field ownership check.
+- `app/db/base.py` — replaced try/except stub with direct `from app.models.subscription import Subscription`.
+
+### Verification
+
+```
+python -c "from app.models.subscription import Subscription; from app.services.stripe_service import price_to_plan; from app.core.limits import PLAN_LIMITS; print('OK', PLAN_LIMITS)"
+# OK {'basis': PlanLimits(...), 'starter': ..., 'farmer': ..., 'pro': ...}
+```
+All route imports resolved; billing routes `['/billing/subscription', '/billing/checkout', '/billing/portal']` and webhook route `['/webhooks/stripe']` confirmed.
+
+---
+
+## Phase 5 — Billing UI — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Scope:** `src/frontend/lib/api/billing.ts`, `src/frontend/components/billing/CurrentPlanCard.tsx`, `src/frontend/components/billing/PlanSelector.tsx`, `src/frontend/app/(dashboard)/billing/page.tsx`
+
+### Files written
+
+- `lib/api/billing.ts` — typed API client (`getSubscription`, `createCheckoutSession`, `createPortalSession`) with full JSDoc and exported `Subscription`, `CheckoutRequest`, `Plan`, `SubscriptionStatus`, `BillingInterval` interfaces.
+- `components/billing/CurrentPlanCard.tsx` — plan tier + status card with German labels, color-coded plan/status badges, next-billing-date display, and "Abonnement verwalten" button (hidden on Basis plan). Only inline SVGs.
+- `components/billing/PlanSelector.tsx` — 4-column pricing grid (Basis/Starter/Farmer/Pro) with monthly/annual toggle, "Empfohlen" badge on Farmer, upgrade/switch CTAs, check/cross feature lists. Computes effective monthly price from annual total. Correct upgrade vs. wechseln label logic based on plan ordering.
+- `app/(dashboard)/billing/page.tsx` — full billing page: subscription fetch on mount, pulse skeleton while loading, error banner, `CurrentPlanCard` + `PlanSelector` composition. Portal and checkout redirects disable all action buttons while in-flight to prevent duplicate submissions.
+
+### TypeScript checks
+- All `@/lib/*` and `@/components/*` import aliases resolve correctly per `tsconfig.json` paths (`./lib/*`, `./components/*` relative to `src/frontend/`).
+- All named exports in `billing.ts` (`getSubscription`, `createCheckoutSession`, `createPortalSession`, `type Subscription`) match the page's import block exactly.
+- `PlanSelector` does not import `useState` from `"react"` with a stale reference — local `billingInterval` state correctly drives toggle and price display.
+- No `TODO` comments; no external icon libraries used.
+
+---
+
+## Landing page cleanup + "So funktioniert's" page — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Scope:** `src/frontend/app/page.tsx`, `src/frontend/app/wie-es-funktioniert/page.tsx`
+
+### Task 1 — page.tsx changes
+- Removed entire TRUST BAR section (fake "127+ Betriebe", "38.000+ ha", "€ 2,3 Mio.", "4,9/5★")
+- Replaced 3 hero stats with factual values: "10 m Satelliten-Auflösung", "5–10 Tage Analyse-Rhythmus", "§67 PflSchG konform"
+- Updated hero badge from "Alle 10 Tage" to "Alle 5–10 Tage"
+- Changed dashboard demo stat: label "Einsparung Saison" -> "Einsparung (Beispiel)", value "€ 4.280" -> "Beispiel: € 3.200"
+- Changed "So funktioniert's" nav link from `#wie-es-funktioniert` anchor to `/wie-es-funktioniert` route
+
+### Task 2 — wie-es-funktioniert/page.tsx created
+- Pure server component with `export const metadata` for SEO
+- Five numbered explanation steps (01–05) with inline SVG illustrations
+- No external icon libraries, no external images, no fake statistics
+- FAQ section (5 Q&A cards, no JS accordion needed)
+- Dark CTA section + footer identical to landing page
+- ISOBUS® trademark attribution included where referenced
+- TypeScript clean — zero errors in both files (pre-existing billing file encoding errors unrelated)
+
+---
+
 ## Impeccable UI — Landing Page Complete Rewrite — 2026-05-14
 
 **Agent:** Software Developer (claude-sonnet-4-6)

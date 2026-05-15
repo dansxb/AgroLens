@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
 from sqlalchemy.dialects.postgresql import UUID
 
 revision: str = "0005"
@@ -47,7 +48,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "notification_type",
-            sa.Enum(
+            PgEnum(
                 "new_vra_map",
                 "field_stress_alert",
                 name="notificationtype",

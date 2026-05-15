@@ -79,6 +79,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         settings.app_version,
         settings.environment,
     )
+    # Import all ORM models so SQLAlchemy can resolve every relationship
+    # string before the first request arrives. Without this, lazy model
+    # imports inside dependency functions can trigger a mapper configuration
+    # error when a model's relationship target isn't registered yet.
+    import app.db.base  # noqa: F401, PLC0415
+    from sqlalchemy.orm import configure_mappers  # noqa: PLC0415
+
+    configure_mappers()
     _init_sentry()
     yield
     # --- Shutdown ---
