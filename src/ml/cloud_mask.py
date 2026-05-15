@@ -12,11 +12,11 @@ import numpy as np
 # SCL class values that indicate invalid (cloud, shadow, snow, water) pixels.
 _INVALID_SCL_CLASSES: frozenset[int] = frozenset(
     {
-        0,   # No data
-        1,   # Saturated / defective
-        3,   # Cloud shadow
-        8,   # Cloud, medium probability
-        9,   # Cloud, high probability
+        0,  # No data
+        1,  # Saturated / defective
+        3,  # Cloud shadow
+        8,  # Cloud, medium probability
+        9,  # Cloud, high probability
         10,  # Thin cirrus
         11,  # Snow / ice
     }

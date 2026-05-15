@@ -37,11 +37,13 @@ class TestComputeNdvi:
     def test_masked_pixels_are_nan(self) -> None:
         nir = np.ones((3, 3), dtype=np.float32) * 0.5
         red = np.ones((3, 3), dtype=np.float32) * 0.2
-        mask = np.array([
-            [True,  False, True],
-            [False, True,  False],
-            [True,  True,  True],
-        ])
+        mask = np.array(
+            [
+                [True, False, True],
+                [False, True, False],
+                [True, True, True],
+            ]
+        )
 
         result = compute_ndvi(nir, red, mask)
 

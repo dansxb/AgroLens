@@ -125,3 +125,54 @@ The `.claude/agents/` directory contains agent definition files for [Claude Code
 - **FLIK-Nummer** — German field identifier for EU cross-compliance (InVeKoS)
 - **ISOBUS ISO 11783-10** — Shapefile alone is not compatible with tractor terminals; TASKDATA.XML is mandatory
 - **DSGVO / GDPR** — Farmer field data stored in EU regions only (S3: `eu-central-1`)
+
+---
+
+## Running tests
+
+Tests that need only NumPy/pure Python can run locally:
+
+```bash
+# Activate the agrolens conda env (or use pip install pytest numpy)
+conda activate agrolens
+
+# ML unit tests (NDVI/NDRE formulas, cloud masking, compositing)
+PYTHONPATH=src/backend:src python -m pytest src/ml/tests/test_indices.py -v
+
+# Prescription engine tests
+PYTHONPATH=src/backend:src python -m pytest src/backend/tests/test_prescription_engine.py -v
+```
+
+Tests that require a live database or Sentinel Hub must run inside Docker:
+
+```bash
+cd src
+docker compose exec backend pytest tests/test_auth.py tests/test_fields_api.py -v
+docker compose exec backend pytest ../ml/tests/test_delineation.py -v
+```
+
+---
+
+## Environment variables
+
+All env vars are documented in `src/.env.example`. The most critical ones:
+
+| Variable | Where used |
+|----------|-----------|
+| `SUPABASE_URL` + `SUPABASE_JWT_SECRET` | Backend JWT verification |
+| `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Frontend Supabase client |
+| `SENTINEL_HUB_CLIENT_ID` + `SENTINEL_HUB_CLIENT_SECRET` | Imagery pipeline |
+| `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `S3_BUCKET` | File storage |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | Map rendering |
+| `SENDGRID_API_KEY` + `SENDGRID_FROM_EMAIL` | Transactional email |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Billing (Phase 5) |
+| `NEXT_PUBLIC_SENTRY_DSN` | Frontend error tracking (optional) |
+
+---
+
+## Contributing
+
+1. Branch from `main` — naming: `feat/`, `fix/`, `refactor/`, `docs/`
+2. Run `black src/backend src/ml` and `isort src/backend src/ml --profile black` before committing
+3. All local tests must pass (`pytest` commands above)
+4. Any prescription rate change requires updating the multiplier table docstring in `src/ml/prescription/engine.py` and the agronomist sign-off comment

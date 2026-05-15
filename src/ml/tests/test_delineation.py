@@ -8,7 +8,6 @@ import pytest
 from ml.zones.delineation import delineate_zones
 from ml.zones.zone_filter import _PIXEL_AREA_HA, filter_minimum_zone_size
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -27,7 +26,9 @@ def _make_gradient_arrays(
     # Low band: ~0.1, Medium: ~0.4, High: ~0.7
     ndvi[:third] = 0.1 + rng.random((third, cols)).astype(np.float32) * 0.05
     ndvi[third : 2 * third] = 0.4 + rng.random((third, cols)).astype(np.float32) * 0.05
-    ndvi[2 * third :] = 0.7 + rng.random((rows - 2 * third, cols)).astype(np.float32) * 0.05
+    ndvi[2 * third :] = (
+        0.7 + rng.random((rows - 2 * third, cols)).astype(np.float32) * 0.05
+    )
     ndre = ndvi * 0.8 + rng.random((rows, cols)).astype(np.float32) * 0.02
     return ndvi, ndre
 
@@ -139,7 +140,7 @@ class TestFilterMinimumZoneSize:
         threshold_px = int(0.5 / _PIXEL_AREA_HA)
         zone_map = np.zeros((200, 200), dtype=np.int8)
         # Zone 1 covers exactly threshold_px - 1 pixels (just below threshold)
-        zone_map[:1, :threshold_px - 1] = 1
+        zone_map[:1, : threshold_px - 1] = 1
         centroids = np.array([[0.2, 0.16], [0.7, 0.56]])
         result = filter_minimum_zone_size(zone_map, centroids, field_area_ha=12.0)
         assert 1 not in np.unique(result)
@@ -148,7 +149,7 @@ class TestFilterMinimumZoneSize:
         # 1.0 ha = 100 pixels at 10m resolution
         threshold_px = int(1.0 / _PIXEL_AREA_HA)
         zone_map = np.zeros((200, 200), dtype=np.int8)
-        zone_map[:1, :threshold_px - 1] = 1
+        zone_map[:1, : threshold_px - 1] = 1
         centroids = np.array([[0.2, 0.16], [0.7, 0.56]])
         result = filter_minimum_zone_size(zone_map, centroids, field_area_ha=5.0)
         assert 1 not in np.unique(result)

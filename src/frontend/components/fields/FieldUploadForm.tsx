@@ -103,7 +103,7 @@ export default function FieldUploadForm({ farmId }: Props) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Feldname *</label>
         <input
           {...register("name")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-agrolens-500 focus:border-transparent"
           placeholder="z.B. Nordfeld Müller"
         />
         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
@@ -113,7 +113,7 @@ export default function FieldUploadForm({ farmId }: Props) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Fruchtart</label>
         <input
           {...register("crop_type")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-agrolens-500 focus:border-transparent"
           placeholder="z.B. Winterweizen"
         />
       </div>
@@ -123,7 +123,7 @@ export default function FieldUploadForm({ farmId }: Props) {
         <input
           {...register("flik")}
           maxLength={18}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-agrolens-500 focus:border-transparent"
           placeholder="Optional — 18-stellige FLIK-Nummer"
         />
       </div>
@@ -133,7 +133,7 @@ export default function FieldUploadForm({ farmId }: Props) {
         <input
           {...register("planting_date")}
           type="date"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-agrolens-500 focus:border-transparent"
         />
       </div>
 
@@ -144,10 +144,10 @@ export default function FieldUploadForm({ farmId }: Props) {
           type="file"
           accept=".geojson,.kml,application/geo+json,application/vnd.google-earth.kml+xml"
           onChange={handleFile}
-          className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+          className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-agrolens-50 file:text-agrolens-700 hover:file:bg-agrolens-100"
         />
         {fileError && <p className="text-red-500 text-xs mt-1">{fileError}</p>}
-        {geometry && <p className="text-green-600 text-xs mt-1">Geometrie geladen ({geometry.type})</p>}
+        {geometry && <p className="text-agrolens-600 text-xs mt-1">Geometrie geladen ({geometry.type})</p>}
       </div>
 
       {apiError && (
@@ -159,7 +159,7 @@ export default function FieldUploadForm({ farmId }: Props) {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-green-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full bg-agrolens-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-agrolens-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {submitting ? "Wird gespeichert…" : "Feld anlegen"}
       </button>

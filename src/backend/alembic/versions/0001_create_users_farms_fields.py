@@ -227,10 +227,7 @@ def upgrade() -> None:
 
     # Add geometry column via PostGIS raw SQL for proper metadata registration
     op.execute(
-        sa.text(
-            "ALTER TABLE fields ADD COLUMN geometry "
-            "geometry(Polygon,4326)"
-        )
+        sa.text("ALTER TABLE fields ADD COLUMN geometry " "geometry(Polygon,4326)")
     )
 
     # ------------------------------------------------------------------
@@ -238,8 +235,7 @@ def upgrade() -> None:
     # ------------------------------------------------------------------
     op.execute(
         sa.text(
-            "CREATE INDEX ix_fields_geometry_gist "
-            "ON fields USING GIST (geometry)"
+            "CREATE INDEX ix_fields_geometry_gist " "ON fields USING GIST (geometry)"
         )
     )
 

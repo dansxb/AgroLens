@@ -228,3 +228,108 @@ Pydantic `BaseSettings` mit `case_sensitive=False` macht env-Variablen beim Einl
 
 **Für andere Agenten:**
 Alle Settings-Attribute in Python mit Lowercase ansprechen: `settings.stripe_secret_key`, `settings.sendgrid_api_key` etc.
+
+---
+
+## Fix #3 — 2026-05-14 — fiona GCC 14 Kompilierungsfehler
+
+**Fehler:**
+```
+fiona/_env.c:4256:32: error: passing argument 1 of 'CSLAddString' from incompatible pointer type [-Wincompatible-pointer-types]
+error: command '/usr/bin/gcc' failed with exit code 1
+ERROR: Failed building wheel for fiona
+```
+
+**Ursache:**
+Debian trixie (im Docker-Image) verwendet GCC 14, das `-Wincompatible-pointer-types` in C-Code als Error behandelt. fiona 1.9.x verwendet altes Cython-generiertes C, das `const char **` an `CSLAddString(char **)` übergibt — ein Typkonflikt, der früher nur eine Warnung war.
+
+**Betroffene Datei(en):**
+- `src/backend/Dockerfile` — builder-Stage RUN-Zeile
+
+**Änderung:**
+```diff
++ CFLAGS="-Wno-incompatible-pointer-types" \
++     pip wheel --no-build-isolation --no-deps --wheel-dir=/wheelhouse "fiona==1.9.*" && \
+```
+
+**Geprüft mit:**
+- [x] Docker build ✅ (fiona 1.9.6 baut durch)
+
+**Seiteneffekte geprüft:** Ja — `CFLAGS` ist nur für den `pip wheel fiona` Schritt gesetzt. Keine Auswirkung auf Runtime oder andere Packages.
+
+**Für andere Agenten:**
+Regel: Bei GCC 14 (Debian trixie/bookworm) kann `-Wno-incompatible-pointer-types` nötig sein für ältere C-Extensions (fiona 1.9.x, ev. ältere scipy-Versionen). Wenn fiona auf 2.x aktualisiert wird, entfällt dieser Workaround.
+
+---
+
+## Fix #4 — 2026-05-14 — numpy fehlt im Runtime-Container
+
+**Fehler:**
+```
+File "/app/app/worker/tasks/notifications.py", line 8, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+```
+
+**Ursache:**
+numpy wurde global in den Builder-Stage Python installiert (`pip install numpy==1.26.*`) — nicht in `/install`. `pip install --prefix=/install -r requirements.txt` überspringt dann numpy, weil es es bereits im globalen sys.path findet. `COPY --from=builder /install /usr/local` kopiert nur `/install` in den Runtime-Container — numpy fehlt dort.
+
+**Betroffene Datei(en):**
+- `src/backend/Dockerfile` — builder-Stage, nach fiona-Wheel-Build
+
+**Änderung:**
+```diff
++ pip uninstall -y Cython numpy && \
+  pip install --prefix=/install --find-links=/wheelhouse --prefer-binary -r requirements.txt
+```
+
+**Strategie:**
+Cython und numpy global deinstallieren, nachdem sie für den Build von rasterio und fiona gebraucht wurden. Dann installiert `pip install --prefix=/install -r requirements.txt` numpy frisch in `/install` — und es landet im Runtime-Container.
+
+**Geprüft mit:**
+- [x] Docker build ✅
+- [x] Container-Start — celery_worker importiert numpy ohne Fehler ✅
+
+**Seiteneffekte geprüft:** Ja — Cython ist keine Runtime-Dependency (nur Build-Zeit). numpy wird über requirements.txt neu in /install installiert. Kein Versionskonflikt.
+
+**Für andere Agenten:**
+Kritische Regel: Build-Deps die global installiert werden (für C-Extension-Builds), müssen danach DEINSTALLIERT werden, wenn sie auch Runtime-Deps sind — sonst überspringt pip sie beim `--prefix=/install` Install.
+
+---
+
+## Fix #5 — 2026-05-14 — FastAPI 0.111.1 AssertionError bei 204-Routen
+
+**Fehler:**
+```
+AssertionError: Status code 204 must not have a response body
+File "/app/app/api/routes/farms.py", line 195, in <module>
+    @router.delete(
+```
+
+**Ursache:**
+FastAPI 0.111.1 inferiert `response_model` aus der Return-Annotation, wenn `response_model` nicht explizit gesetzt ist. Für `-> None` gibt `get_typed_return_annotation()` `NoneType` zurück (die Klasse, nicht `None` den Wert). Klassen sind in Python truthy — `if self.response_model:` feuert. Dann schlägt `assert is_body_allowed_for_status_code(204)` fehl, weil 204 keinen Body erlaubt.
+
+**Betroffene Datei(en):**
+- `src/backend/app/api/routes/farms.py` — `delete_farm()`
+- `src/backend/app/api/routes/fields.py` — `delete_field()`
+- `src/backend/app/api/routes/users.py` — `delete_me()`
+- `src/backend/app/api/routes/api_keys.py` — `revoke_api_key()`
+
+**Änderung:**
+```diff
+- @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, ...)
++ @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None, ...)
+```
+(Auf alle 4 DELETE-Routen mit status_code=204 angewendet)
+
+**Warum `response_model=None` funktioniert:**
+Wenn `response_model` explizit als `None` übergeben wird (nicht `Default(None)`), überspringt FastAPI die Annotation-Inferenz. `self.response_model = None` → `if None:` → False → kein Assert.
+
+**Geprüft mit:**
+- [x] Container-Start ✅ — Backend startet ohne AssertionError
+- [x] Health-Check ✅ — `GET /health` → `{"status": "ok"}`
+
+**Seiteneffekte geprüft:** Ja — `response_model=None` ist das korrekte Signal für FastAPI, keinen Response-Body zu serialisieren. Verhalten von 204-Routen unverändert.
+
+**Für andere Agenten:**
+Regel für FastAPI 0.111.x: Alle `@router.delete` (und andere Methoden) mit `status_code=204` MÜSSEN `response_model=None` explizit setzen. `-> None` Annotation allein reicht nicht mehr.

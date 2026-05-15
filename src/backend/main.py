@@ -20,6 +20,8 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import sentry_sdk
+from app.core.config import settings
+from app.core.rate_limiting import limiter
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sentry_sdk.integrations.fastapi import FastApiIntegration
@@ -27,9 +29,6 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-
-from app.core.config import settings
-from app.core.rate_limiting import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +79,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         settings.app_version,
         settings.environment,
     )
+    # Import all ORM models so SQLAlchemy can resolve every relationship
+    # string before the first request arrives. Without this, lazy model
+    # imports inside dependency functions can trigger a mapper configuration
+    # error when a model's relationship target isn't registered yet.
+    import app.db.base  # noqa: F401, PLC0415
+    from sqlalchemy.orm import configure_mappers  # noqa: PLC0415
+
+    configure_mappers()
     _init_sentry()
     yield
     # --- Shutdown ---
@@ -154,11 +161,11 @@ def create_app() -> FastAPI:
         logger.warning("Phase 1 routers not yet available: %s", exc)
 
     try:
+        from app.api.routes.analytics import router as analytics_router  # noqa: PLC0415
+        from app.api.routes.exports import router as exports_router  # noqa: PLC0415
         from app.api.routes.prescriptions import (  # noqa: PLC0415
             router as prescriptions_router,
         )
-        from app.api.routes.analytics import router as analytics_router  # noqa: PLC0415
-        from app.api.routes.exports import router as exports_router  # noqa: PLC0415
 
         application.include_router(prescriptions_router, prefix="/api/v1")
         application.include_router(analytics_router, prefix="/api/v1")
@@ -167,15 +174,16 @@ def create_app() -> FastAPI:
         logger.warning("Phase 3 routers not yet available: %s", exc)
 
     try:
-        from app.api.routes.notification_preferences import (  # noqa: PLC0415
-            router as notif_router,
-        )
-        from app.api.routes.api_keys import _account_router, router as api_keys_router  # noqa: PLC0415
+        from app.api.routes.api_keys import _account_router
+        from app.api.routes.api_keys import router as api_keys_router  # noqa: PLC0415
         from app.api.routes.billing import router as billing_router  # noqa: PLC0415
-        from app.api.routes.webhooks import router as webhooks_router  # noqa: PLC0415
         from app.api.routes.monitoring import (  # noqa: PLC0415
             router as monitoring_router,
         )
+        from app.api.routes.notification_preferences import (  # noqa: PLC0415
+            router as notif_router,
+        )
+        from app.api.routes.webhooks import router as webhooks_router  # noqa: PLC0415
 
         application.include_router(notif_router, prefix="/api/v1")
         application.include_router(api_keys_router, prefix="/api/v1")

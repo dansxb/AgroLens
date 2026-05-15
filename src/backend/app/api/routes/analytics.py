@@ -15,16 +15,13 @@ from datetime import date
 from decimal import Decimal
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.api.deps import get_current_user, get_db, get_owned_field
+from app.models.user import User
+from app.models.vegetation_index import VegetationIndex
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.api.deps import get_current_user, get_db
-from app.models.farm import Farm
-from app.models.field import Field
-from app.models.user import User
-from app.models.vegetation_index import VegetationIndex
 
 logger = logging.getLogger(__name__)
 
@@ -67,31 +64,6 @@ class HealthSummary(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-async def _get_owned_field(
-    field_id: uuid.UUID,
-    current_user: User,
-    db: AsyncSession,
-) -> Field:
-    """Fetch a field owned by the authenticated user or raise 404."""
-    result = await db.execute(
-        select(Field)
-        .join(Farm, Farm.id == Field.farm_id)
-        .where(Field.id == field_id, Farm.user_id == current_user.id)
-    )
-    field = result.scalar_one_or_none()
-    if field is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Field {field_id} not found.",
-        )
-    return field
-
-
-# ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
 
@@ -121,8 +93,10 @@ async def get_ndvi_series(
     Returns:
         :class:`NdviSeriesResponse` with ordered time-series data points.
     """
-    await _get_owned_field(field_id, current_user, db)
-    logger.debug("get_ndvi_series: field=%s index=%s limit=%d", field_id, index_type, limit)
+    await get_owned_field(field_id, current_user, db)
+    logger.debug(
+        "get_ndvi_series: field=%s index=%s limit=%d", field_id, index_type, limit
+    )
 
     result = await db.execute(
         select(VegetationIndex)
@@ -134,7 +108,9 @@ async def get_ndvi_series(
         .limit(limit)
     )
     indices = list(result.scalars().all())
-    logger.info("get_ndvi_series: field=%s returned %d data points", field_id, len(indices))
+    logger.info(
+        "get_ndvi_series: field=%s returned %d data points", field_id, len(indices)
+    )
 
     data_points = [
         NdviDataPoint(
@@ -178,7 +154,7 @@ async def get_health_summary(
     Returns:
         :class:`HealthSummary` with latest index values and staleness flag.
     """
-    await _get_owned_field(field_id, current_user, db)
+    await get_owned_field(field_id, current_user, db)
     logger.debug("get_health_summary: field=%s user=%s", field_id, current_user.id)
 
     async def _latest(index_type: str) -> Optional[VegetationIndex]:
@@ -196,18 +172,17 @@ async def get_health_summary(
     latest_ndvi = await _latest("ndvi")
     latest_ndre = await _latest("ndre")
 
-    from datetime import datetime, timezone
-
     today = date.today()
     composite_end: Optional[date] = latest_ndvi.composite_end if latest_ndvi else None
-    days_since: Optional[int] = (
-        (today - composite_end).days if composite_end else None
-    )
+    days_since: Optional[int] = (today - composite_end).days if composite_end else None
 
     stale = days_since is not None and days_since > 14
     logger.info(
         "get_health_summary: field=%s ndvi=%s days_since=%s stale=%s",
-        field_id, latest_ndvi.mean_value if latest_ndvi else None, days_since, stale,
+        field_id,
+        latest_ndvi.mean_value if latest_ndvi else None,
+        days_since,
+        stale,
     )
     return HealthSummary(
         field_id=field_id,

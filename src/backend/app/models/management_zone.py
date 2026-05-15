@@ -16,12 +16,12 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
-from geoalchemy2 import Geometry, WKBElement
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, func
-from sqlalchemy.dialects.postgresql import ENUM as PgEnum, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.base_class import Base
+from geoalchemy2 import Geometry, WKBElement
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, func
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.models.field import Field

@@ -16,7 +16,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import List, Optional
 
-from pydantic import AnyHttpUrl, Field, field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -120,9 +120,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
 
     aws_access_key_id: str = Field(..., description="AWS IAM access key ID.")
-    aws_secret_access_key: str = Field(
-        ..., description="AWS IAM secret access key."
-    )
+    aws_secret_access_key: str = Field(..., description="AWS IAM secret access key.")
     aws_s3_bucket_name: str = Field(
         ..., description="S3 bucket for imagery and export storage."
     )
@@ -175,9 +173,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
 
     sendgrid_api_key: str = Field(..., description="SendGrid API key.")
-    sendgrid_from_email: str = Field(
-        ..., description="Verified sender email address."
-    )
+    sendgrid_from_email: str = Field(..., description="Verified sender email address.")
 
     # ------------------------------------------------------------------
     # Celery
@@ -186,9 +182,7 @@ class Settings(BaseSettings):
     celery_broker_url: str = Field(
         ..., description="Redis or RabbitMQ URL for Celery broker."
     )
-    celery_result_backend: str = Field(
-        ..., description="Celery result backend URL."
-    )
+    celery_result_backend: str = Field(..., description="Celery result backend URL.")
 
     # ------------------------------------------------------------------
     # Sentry

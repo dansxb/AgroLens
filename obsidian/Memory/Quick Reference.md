@@ -31,7 +31,7 @@ import { toGeoJSON } from "@mapbox/togeojson"    # ❌
 |---|---|---|
 | `SECRET_KEY` | ✅ gesetzt | 64-char hex |
 | `SUPABASE_URL` | ✅ gesetzt | `https://feoohtmphywquwzonpwq.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ gesetzt | `sb_secret_jyE7…` |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ gesetzt | *(in .env, nicht hier)* |
 | `SUPABASE_JWT_SECRET` | ✅ gesetzt | base64 string |
 | `CELERY_BROKER_URL` | ✅ gesetzt | `redis://localhost:6379/0` |
 | `SENTINEL_HUB_*` | ❌ fehlt | Für Bildgebungspipeline |

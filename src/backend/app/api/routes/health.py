@@ -13,13 +13,12 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 
+from app.core.config import settings
+from app.db.session import get_db
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.config import settings
-from app.db.session import get_db
 
 logger = logging.getLogger(__name__)
 

@@ -8,7 +8,6 @@ of the class name (e.g. ``UserProfile`` → ``user_profiles``).
 from __future__ import annotations
 
 import re
-from typing import Any
 
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 

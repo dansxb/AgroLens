@@ -28,10 +28,6 @@ def trigger_daily_imagery_pipeline() -> dict[str, int]:
     Returns:
         Dict with ``fields_enqueued`` and ``fields_skipped`` counts.
     """
-    import uuid
-    from datetime import date
-
-    from sqlalchemy import func, select, text
 
     from app.db.session import SessionLocal
     from app.models.field import Field
@@ -39,6 +35,7 @@ def trigger_daily_imagery_pipeline() -> dict[str, int]:
     from app.models.vegetation_index import VegetationIndex
     from app.worker.tasks.imagery import fetch_field_imagery
     from app.worker.tasks.indices import compute_field_indices
+    from sqlalchemy import func, select
 
     run_at = datetime.now(tz=timezone.utc)
     cutoff = (run_at - timedelta(days=_STALE_DAYS)).date()
@@ -68,15 +65,21 @@ def trigger_daily_imagery_pipeline() -> dict[str, int]:
             )
 
             # All fields that are either missing from the subquery or stale
-            stale_fields = db.execute(
-                select(Field.id).outerjoin(
-                    latest_composite,
-                    Field.id == latest_composite.c.field_id,
-                ).where(
-                    (latest_composite.c.latest_end == None)  # noqa: E711
-                    | (latest_composite.c.latest_end < cutoff)
+            stale_fields = (
+                db.execute(
+                    select(Field.id)
+                    .outerjoin(
+                        latest_composite,
+                        Field.id == latest_composite.c.field_id,
+                    )
+                    .where(
+                        (latest_composite.c.latest_end == None)  # noqa: E711
+                        | (latest_composite.c.latest_end < cutoff)
+                    )
                 )
-            ).scalars().all()
+                .scalars()
+                .all()
+            )
 
         composite_start = str(cutoff - timedelta(days=_STALE_DAYS))
         composite_end = str(run_at.date())
@@ -96,7 +99,8 @@ def trigger_daily_imagery_pipeline() -> dict[str, int]:
             except Exception as exc:
                 logger.error(
                     "trigger_daily_imagery_pipeline: failed to enqueue field=%s: %s",
-                    field_id, exc,
+                    field_id,
+                    exc,
                 )
                 failed += 1
 

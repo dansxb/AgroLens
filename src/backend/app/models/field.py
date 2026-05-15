@@ -17,8 +17,9 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
+from app.db.base_class import Base
 from geoalchemy2 import Geometry, WKBElement
 from sqlalchemy import (
     Date,
@@ -31,16 +32,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
-
-from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from app.models.farm import Farm
-    from app.models.satellite_scene import SatelliteScene
-    from app.models.vegetation_index import VegetationIndex
     from app.models.management_zone import ManagementZone
     from app.models.prescription import Prescription
+    from app.models.satellite_scene import SatelliteScene
+    from app.models.vegetation_index import VegetationIndex
 
 
 # PostgreSQL native ENUM for crop type — kept as a module-level constant so

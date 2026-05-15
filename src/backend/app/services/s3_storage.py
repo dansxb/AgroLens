@@ -10,17 +10,14 @@ conventions defined in the development plan:
 
 from __future__ import annotations
 
-import io
 import logging
 from typing import Any
 
 import boto3
 import numpy as np
-import rasterio
+from app.core.config import settings
 from botocore.exceptions import BotoCoreError, ClientError
 from rasterio.io import MemoryFile
-
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +29,9 @@ class S3StorageService:
     All state lives in the module-level boto3 client factory.
     """
 
-    def upload_geotiff(self, key: str, data: "np.ndarray", profile: "dict[str, Any]") -> str:
+    def upload_geotiff(
+        self, key: str, data: "np.ndarray", profile: "dict[str, Any]"
+    ) -> str:
         return upload_geotiff(key, data, profile)
 
     def download_geotiff(self, key: str) -> "tuple[np.ndarray, dict[str, Any]]":
@@ -96,9 +95,16 @@ def upload_geotiff(
             ContentType="image/tiff",
         )
     except (BotoCoreError, ClientError) as exc:
-        raise RuntimeError(f"Failed to upload GeoTIFF to s3://{settings.aws_s3_bucket_name}/{key}: {exc}") from exc
+        raise RuntimeError(
+            f"Failed to upload GeoTIFF to s3://{settings.aws_s3_bucket_name}/{key}: {exc}"
+        ) from exc
 
-    logger.debug("Uploaded GeoTIFF to s3://%s/%s (%d bytes)", settings.aws_s3_bucket_name, key, len(tiff_bytes))
+    logger.debug(
+        "Uploaded GeoTIFF to s3://%s/%s (%d bytes)",
+        settings.aws_s3_bucket_name,
+        key,
+        len(tiff_bytes),
+    )
     return key
 
 
@@ -159,6 +165,8 @@ def generate_presigned_url(key: str, expires_in: int = 3600) -> str:
             ExpiresIn=expires_in,
         )
     except (BotoCoreError, ClientError) as exc:
-        raise RuntimeError(f"Failed to generate presigned URL for {key}: {exc}") from exc
+        raise RuntimeError(
+            f"Failed to generate presigned URL for {key}: {exc}"
+        ) from exc
 
     return url

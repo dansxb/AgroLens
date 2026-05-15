@@ -7,7 +7,7 @@ Tests verify correct request construction and error handling.
 from __future__ import annotations
 
 from datetime import date
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -27,8 +27,20 @@ def client() -> SentinelHubClient:
 class TestSearchScenes:
     def test_returns_scene_list(self, client: SentinelHubClient) -> None:
         fake_scenes = [
-            {"id": "S2A_scene_1", "properties": {"datetime": "2024-05-01T10:00:00Z", "eo:cloud_cover": 5.0}},
-            {"id": "S2A_scene_2", "properties": {"datetime": "2024-05-06T10:05:00Z", "eo:cloud_cover": 12.0}},
+            {
+                "id": "S2A_scene_1",
+                "properties": {
+                    "datetime": "2024-05-01T10:00:00Z",
+                    "eo:cloud_cover": 5.0,
+                },
+            },
+            {
+                "id": "S2A_scene_2",
+                "properties": {
+                    "datetime": "2024-05-06T10:05:00Z",
+                    "eo:cloud_cover": 12.0,
+                },
+            },
         ]
 
         with patch("ml.sentinel.client.SentinelHubCatalog") as MockCatalog:
@@ -63,7 +75,9 @@ class TestSearchScenes:
     def test_raises_on_api_error(self, client: SentinelHubClient) -> None:
         with patch("ml.sentinel.client.SentinelHubCatalog") as MockCatalog:
             mock_catalog_instance = MockCatalog.return_value
-            mock_catalog_instance.search.side_effect = RuntimeError("Connection refused")
+            mock_catalog_instance.search.side_effect = RuntimeError(
+                "Connection refused"
+            )
 
             with pytest.raises(SentinelHubError, match="Scene search failed"):
                 client.search_scenes(
@@ -86,7 +100,9 @@ class TestDownloadBands:
             mock_req_instance = MockRequest.return_value
             mock_req_instance.get_data.return_value = [fake_data]
 
-            with patch("ml.sentinel.client.bbox_to_dimensions", return_value=(100, 100)):
+            with patch(
+                "ml.sentinel.client.bbox_to_dimensions", return_value=(100, 100)
+            ):
                 result = client.download_bands(
                     scene_datetime="2024-05-01T10:00:00Z",
                     bbox=[13.4, 52.5, 13.5, 52.6],
@@ -119,7 +135,9 @@ class TestDownloadBands:
             mock_req_instance = MockRequest.return_value
             mock_req_instance.get_data.side_effect = RuntimeError("Timeout")
 
-            with patch("ml.sentinel.client.bbox_to_dimensions", return_value=(100, 100)):
+            with patch(
+                "ml.sentinel.client.bbox_to_dimensions", return_value=(100, 100)
+            ):
                 with pytest.raises(SentinelHubError, match="Band download failed"):
                     client.download_bands(
                         scene_datetime="2024-05-01T10:00:00Z",
@@ -127,7 +145,9 @@ class TestDownloadBands:
                         bands=["B04", "B08"],
                     )
 
-    def test_raises_when_band_missing_from_response(self, client: SentinelHubClient) -> None:
+    def test_raises_when_band_missing_from_response(
+        self, client: SentinelHubClient
+    ) -> None:
         bands = ["B04", "B08"]
         # Only B04 in the response, B08 missing
         fake_data = {"B04": np.ones((10, 10, 1), dtype=np.float32)}
@@ -137,7 +157,9 @@ class TestDownloadBands:
             mock_req_instance.get_data.return_value = [fake_data]
 
             with patch("ml.sentinel.client.bbox_to_dimensions", return_value=(10, 10)):
-                with pytest.raises(SentinelHubError, match="missing from downloaded data"):
+                with pytest.raises(
+                    SentinelHubError, match="missing from downloaded data"
+                ):
                     client.download_bands(
                         scene_datetime="2024-05-01T10:00:00Z",
                         bbox=[13.4, 52.5, 13.5, 52.6],

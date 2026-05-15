@@ -15,8 +15,8 @@
     "@mapbox/togeojson": "^0.16.2",
     "@sentry/nextjs": "^7.119.0",
     "@stripe/stripe-js": "^3.5.0",
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/supabase-js": "^2.43.4",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
     "@types/mapbox-gl": "^3.1.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.376.0",
@@ -30,6 +30,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/mapbox__mapbox-gl-draw": "^1.4.9",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

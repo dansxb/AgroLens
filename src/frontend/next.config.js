@@ -69,7 +69,7 @@ const nextConfig = {
   experimental: {
     // Enable server actions (used for Supabase server-side auth helpers)
     serverActions: {
-      allowedOrigins: ["localhost:3000"],
+      allowedOrigins: (process.env.NEXT_PUBLIC_ALLOWED_ORIGINS ?? "localhost:3000").split(","),
     },
   },
 };

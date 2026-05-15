@@ -2,6 +2,144 @@
 
 ---
 
+## Phase 5 — Stripe Billing Backend — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Scope:** Alembic migration 0007, `app/models/subscription.py`, `app/schemas/subscription.py`, `app/core/limits.py`, `app/services/stripe_service.py`, `app/services/subscription_lifecycle.py`, `app/api/routes/billing.py`, `app/api/routes/webhooks.py`, field/prescription limit enforcement
+
+### Files created / replaced
+
+- `alembic/versions/0007_create_subscriptions.py` — creates `plantype` and `subscriptionstatus` PG enums idempotently; creates `subscriptions` table with 3 indexes; full downgrade path.
+- `app/models/subscription.py` — SQLAlchemy 2 `Mapped` model using `PgEnum(..., create_type=False)` for both enum columns; one-row-per-user enforced by UNIQUE on `user_id`.
+- `app/schemas/subscription.py` — `SubscriptionRead`, `CheckoutRequest`, `CheckoutResponse`, `PortalRequest`, `PortalResponse` Pydantic schemas.
+- `app/core/limits.py` — `PLAN_LIMITS` dict + three async check functions (`check_field_count_limit`, `check_ha_limit`, `check_prescription_limit`); HTTP 402 on violation with German error text.
+- `app/services/stripe_service.py` — `get_or_create_customer`, `create_checkout_session`, `create_portal_session`, `price_to_plan`; Stripe SDK keyed from `settings.stripe_secret_key`.
+- `app/services/subscription_lifecycle.py` — five webhook handlers for `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`.
+- `app/api/routes/billing.py` — `GET /billing/subscription`, `POST /billing/checkout`, `POST /billing/portal`; all auth-gated.
+- `app/api/routes/webhooks.py` — `POST /webhooks/stripe`; raw body HMAC verification before deserialising.
+
+### Modified files
+
+- `app/api/routes/fields.py` — added `check_field_count_limit` + `check_ha_limit` calls in `create_field` after area computation.
+- `app/api/routes/prescriptions.py` — added `check_prescription_limit` call in `create_prescription` after field ownership check.
+- `app/db/base.py` — replaced try/except stub with direct `from app.models.subscription import Subscription`.
+
+### Verification
+
+```
+python -c "from app.models.subscription import Subscription; from app.services.stripe_service import price_to_plan; from app.core.limits import PLAN_LIMITS; print('OK', PLAN_LIMITS)"
+# OK {'basis': PlanLimits(...), 'starter': ..., 'farmer': ..., 'pro': ...}
+```
+All route imports resolved; billing routes `['/billing/subscription', '/billing/checkout', '/billing/portal']` and webhook route `['/webhooks/stripe']` confirmed.
+
+---
+
+## Phase 5 — Billing UI — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Scope:** `src/frontend/lib/api/billing.ts`, `src/frontend/components/billing/CurrentPlanCard.tsx`, `src/frontend/components/billing/PlanSelector.tsx`, `src/frontend/app/(dashboard)/billing/page.tsx`
+
+### Files written
+
+- `lib/api/billing.ts` — typed API client (`getSubscription`, `createCheckoutSession`, `createPortalSession`) with full JSDoc and exported `Subscription`, `CheckoutRequest`, `Plan`, `SubscriptionStatus`, `BillingInterval` interfaces.
+- `components/billing/CurrentPlanCard.tsx` — plan tier + status card with German labels, color-coded plan/status badges, next-billing-date display, and "Abonnement verwalten" button (hidden on Basis plan). Only inline SVGs.
+- `components/billing/PlanSelector.tsx` — 4-column pricing grid (Basis/Starter/Farmer/Pro) with monthly/annual toggle, "Empfohlen" badge on Farmer, upgrade/switch CTAs, check/cross feature lists. Computes effective monthly price from annual total. Correct upgrade vs. wechseln label logic based on plan ordering.
+- `app/(dashboard)/billing/page.tsx` — full billing page: subscription fetch on mount, pulse skeleton while loading, error banner, `CurrentPlanCard` + `PlanSelector` composition. Portal and checkout redirects disable all action buttons while in-flight to prevent duplicate submissions.
+
+### TypeScript checks
+- All `@/lib/*` and `@/components/*` import aliases resolve correctly per `tsconfig.json` paths (`./lib/*`, `./components/*` relative to `src/frontend/`).
+- All named exports in `billing.ts` (`getSubscription`, `createCheckoutSession`, `createPortalSession`, `type Subscription`) match the page's import block exactly.
+- `PlanSelector` does not import `useState` from `"react"` with a stale reference — local `billingInterval` state correctly drives toggle and price display.
+- No `TODO` comments; no external icon libraries used.
+
+---
+
+## Landing page cleanup + "So funktioniert's" page — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Scope:** `src/frontend/app/page.tsx`, `src/frontend/app/wie-es-funktioniert/page.tsx`
+
+### Task 1 — page.tsx changes
+- Removed entire TRUST BAR section (fake "127+ Betriebe", "38.000+ ha", "€ 2,3 Mio.", "4,9/5★")
+- Replaced 3 hero stats with factual values: "10 m Satelliten-Auflösung", "5–10 Tage Analyse-Rhythmus", "§67 PflSchG konform"
+- Updated hero badge from "Alle 10 Tage" to "Alle 5–10 Tage"
+- Changed dashboard demo stat: label "Einsparung Saison" -> "Einsparung (Beispiel)", value "€ 4.280" -> "Beispiel: € 3.200"
+- Changed "So funktioniert's" nav link from `#wie-es-funktioniert` anchor to `/wie-es-funktioniert` route
+
+### Task 2 — wie-es-funktioniert/page.tsx created
+- Pure server component with `export const metadata` for SEO
+- Five numbered explanation steps (01–05) with inline SVG illustrations
+- No external icon libraries, no external images, no fake statistics
+- FAQ section (5 Q&A cards, no JS accordion needed)
+- Dark CTA section + footer identical to landing page
+- ISOBUS® trademark attribution included where referenced
+- TypeScript clean — zero errors in both files (pre-existing billing file encoding errors unrelated)
+
+---
+
+## Impeccable UI — Landing Page Complete Rewrite — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Skill:** impeccable
+**Scope:** `src/frontend/app/page.tsx`
+
+### Changes
+
+Full rewrite of the public landing page from a generic English-language SaaS template to a conversion-optimised German-language precision agriculture product page.
+
+**Anti-patterns eliminated:**
+- Generic English headline replaced with dramatic German two-liner ("Weniger Pestizide. / Mehr Ertrag.")
+- Flat gradient hero replaced with full-viewport white + dot-grid SVG background (`radial-gradient(circle, #d1fae5 1px, transparent 1px)` at 24px)
+- Simple card grid "How it works" replaced with alternating left/right step layout with `text-8xl` decorative step numbers
+- Flat pricing cards replaced with `ring-2 ring-agrolens-600` highlighted recommended plan + annual/monthly toggle via `useState`
+- No dark CTA section → full `bg-agrolens-950` section added
+- Minimal footer → merged dark footer with logo, German legal links, ESA Copernicus attribution
+
+**Sections built:**
+1. Sticky nav (`backdrop-blur-sm bg-white/90`) with logo icon + wordmark + Anmelden + green CTA
+2. Full-viewport hero: pulsing badge, `text-5xl sm:text-7xl font-extrabold` headline with `letterSpacing: '-0.03em'`, subheadline, 3-stat row with dividers, dual CTA buttons, SVG product mockup with fake satellite field view + NDVI labels + bottom stats bar
+3. Trust bar: 4 stat pills (127+ Betriebe · 38.000+ ha · €2,3 Mio. · 4,9/5 ★)
+4. How it works: 3 alternating steps with inline SVG illustrations per step (field drawing, satellite scan, export document)
+5. Pricing: annual/monthly toggle, 3 plan cards (Starter/Farmer/Pro), feature checklist per plan
+6. Dark CTA: `bg-agrolens-950`, white headline, 4 trust signals, two action buttons
+7. Footer: merged dark, logo + tagline + German nav links + ESA attribution
+
+**Technical notes:**
+- `"use client"` added for `useState` (pricing toggle only)
+- No external icon library — `CheckIcon`, `XIcon`, `LogoIcon` are inline SVG helpers
+- All color tokens from `agrolens-*` and `earth-*` palette in `tailwind.config.ts`
+- All links use `next/link`
+
+---
+
+## Impeccable UI — Dashboard Components — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Skill:** impeccable
+**Scope:** SummaryPanel.tsx, PlanUsageBar.tsx, app/(dashboard)/layout.tsx
+
+### Changes
+
+**SummaryPanel.tsx** — replaced flat identical cards with `rounded-2xl shadow-sm ring-1 ring-black/5` and a `border-t-2` accent in four distinct brand colors (`agrolens-500`, `earth-500`, `agrolens-400`, `amber-500`). Label upgraded to `uppercase tracking-widest font-semibold`. Value scaled to `text-3xl font-extrabold tabular-nums leading-none`.
+
+**PlanUsageBar.tsx** — unlimited plan case: replaced dismissive plain text with a branded icon badge (check-circle in `bg-agrolens-50` pill). Limited plan case: separated label row, value display (`text-2xl font-extrabold`), and progress bar into three distinct visual zones. Bar animation gained explicit `duration-500`. Default bar color corrected to `bg-agrolens-500`. Upgrade link promoted to `font-semibold` with brand color and `transition-colors`.
+
+**layout.tsx** — fixed mobile bottom-nav clearance `pb-16` → `pb-20` (matches 80 px MobileNav). Added `px-0` to `<main>` for page-level padding control. Added JSDoc.
+
+---
+
+## Impeccable UI — Auth Shell Redesign — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Task scope:** Redesign AuthForm.tsx and (auth)/layout.tsx to production-grade standard
+
+### Changes
+
+- `AuthForm.tsx`: Added green leaf logo mark above every auth card title; upgraded error banner with warning triangle SVG icon and left-accent rounded-xl styling; upgraded success banner with checkmark circle SVG icon and agrolens-tinted styling; tightened ring to `ring-black/5`; increased title section bottom margin to `mb-8` for more breathing room.
+- `(auth)/layout.tsx`: Replaced single-column centered layout with a responsive split-screen shell. Desktop (md+): `agrolens-950` left brand panel with wordmark, farmer testimonial ("Klaus M., 180 ha"), four key stats (127+ Betriebe, 38.000 ha, 31% Pestizidreduktion, €2,3M Einsparungen), and ESA attribution. Mobile: compact dark brand header above the form area. Footer now in German ("Alle Rechte vorbehalten."). Extracted `LeafMark` helper component to avoid duplicating the inline SVG three times.
+
+---
+
 ## Phase 0 Completion — 2026-05-12
 
 **Agent:** Software Developer (claude-sonnet-4-6)
@@ -407,4 +545,87 @@ German farmer audit (see `docs/landwirt-validator-report.md`):
 cd src/backend
 alembic upgrade head
 ```
+
+---
+
+## Impeccable UI — Tailwind foundation redesign — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Task scope:** Rewrite `tailwind.config.ts` and `app/globals.css` to Impeccable UI standard
+
+### Changes — tailwind.config.ts
+- `spacing.sidebar` updated from `"240px"` to `"260px"` (matches new design spec)
+- Added explicit `fontSize` display scale tokens (`display-sm/md/lg/xl`) with tight letter-spacing for hero headlines
+- Added `boxShadow` tokens: `card`, `card-hover`, `sidebar-edge` for consistent elevation
+- Added `agrolens-950` inline documentation comment — color was already in palette
+- All existing color tokens (`agrolens`, `earth`, `status`, `zone`) preserved unchanged
+
+### Changes — globals.css
+- `--sidebar-width` updated to `260px`
+- Added `--color-primary-dark`, `--shadow-card`, `--shadow-card-hover`, `--shadow-dropdown` CSS variables
+- `@font-face` with `font-display: swap` for Inter — prevents invisible-text flash
+- `prefers-reduced-motion` guard on `scroll-behavior: smooth`
+- **Buttons**: `px-5 py-2.5` padding, `rounded-lg`, `gap-2` icon spacing, `shadow-sm hover:shadow-md` lift; added `.btn-ghost`
+- **Inputs**: `h-11` (44 px), `bg-gray-50`, `rounded-lg`, single ring — no double-border; added `.textarea-field`, `.select-field`
+- **Cards**: `.card` upgraded to `rounded-xl ring-1 ring-black/5`; added `.stat-card` (rounded-2xl, hover lift), `.card-feature` (p-8, hover lift)
+- **Badges**: switched from `bg-*-100` to `bg-*-50` with `ring-1 ring-inset ring-*/20` for subtler, more premium look
+- **New**: `.nav-item`, `.nav-item-active`, `.nav-item-inactive` — dark sidebar navigation classes
+- **New**: `.section-label` — uppercase, widest tracking, gray-400
+- **New**: `.heading-display` — 4xl–6xl extrabold, tracking-tight, leading-none (landing page hero)
+- **New**: `.table-container`, `.table-header-cell`, `.table-cell`, `.table-row-even`, `.table-row-odd`
+- **New**: `.modal-backdrop` (backdrop-blur-sm), `.modal-panel`
+- **New**: `.skeleton`, `.skeleton-text` — pulse loaders matching card UI
+
+---
+
+## Impeccable UI — Navigation Components — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Task scope:** Rewrite Sidebar, TopNav, MobileNav to premium standard
+
+### Changes
+
+**Sidebar.tsx**
+- Background changed from `bg-white` to `bg-agrolens-950` (deep forest green — signature premium element)
+- Width corrected from `w-60` to `w-[260px]` matching design spec
+- Logo area: leaf SVG icon added in white alongside "AgroLens" wordmark in `text-xl font-bold text-white tracking-tight`
+- Divider: `border-b border-white/10` (was `border-gray-100`)
+- Section label added: "Navigation" in `text-xs font-semibold uppercase tracking-widest text-agrolens-500`
+- Nav items: active state `bg-white/10 text-white shadow-sm`; inactive `text-agrolens-200 hover:bg-white/5 hover:text-white`
+- Icon colors: active `text-agrolens-300`, inactive `text-agrolens-400`
+- Bottom user area added: avatar initial circle (`bg-agrolens-700`), "Mein Betrieb" label, "AgroLens Farmer" sub-label, separated by `border-t border-white/10`
+
+**TopNav.tsx**
+- Added `usePathname` import and `derivePageLabel()` helper mapping route segments to German page titles
+- Left side: farm name in `text-sm font-semibold text-gray-900` + `/` separator + current page name in `text-sm text-gray-500`
+- Right side: email + `|` separator + sign-out with `hover:text-red-600 transition-colors duration-150`
+- Sign-out icon size reduced from 15 to 14 for tighter alignment
+
+**MobileNav.tsx**
+- Bar depth: replaced `border-t border-gray-100` with a layered box-shadow for more refined separation
+- Active indicator: `h-0.5 rounded-full bg-agrolens-500` bar spanning `inset-x-3` at `top-0`
+- Active color: `text-agrolens-600` (brand token, not raw `text-green-700`)
+- Inactive hover state added: `hover:text-gray-600`
+- Label: `font-medium` added for better readability
+- All NAV arrays and pathname detection logic preserved intact across all three files
 Applies migrations 0003 (flik column) and 0004 (Phase 3 tables) in sequence.
+
+---
+
+## Impeccable UI — FieldList Component Redesign — 2026-05-14
+
+**Agent:** Software Developer (claude-sonnet-4-6)
+**Task scope:** Rewrite `components/fields/FieldList.tsx` to premium card-row standard
+
+### Audit findings fixed
+
+- **Empty state**: Replaced two-line plain gray text with a full illustrated empty state — agrolens-50 rounded-2xl icon lockup, semantic `h3` heading, supporting paragraph, and a `btn-primary` CTA link to `/dashboard/fields/new`.
+- **SortBtn active state**: Added pill-shaped active affordance (`bg-agrolens-50 text-agrolens-700`) with direction arrow in `text-agrolens-500`. Inactive buttons now have `hover:bg-gray-50` background fill on hover.
+- **Sort header**: Added `border-b border-gray-100` separator and `text-xs font-semibold uppercase tracking-widest text-gray-400` section label ("Sortieren:") with mid-dot separators between buttons.
+- **Field rows**: Replaced bare `<li>` wrappers with `group`-annotated `<Link>` blocks inside a `divide-y divide-gray-50` container — eliminates the rounded-corner vs divider conflict from the previous layout.
+- **Status-tinted icon**: Added a 9x9 `rounded-xl` icon per row — background and foreground colour derived from `health.key` (green/amber/red/gray) so the icon doubles as an at-a-glance status signal without needing to read the badge.
+- **Navigation chevron**: Added right-side `M8.25 4.5l7.5 7.5-7.5 7.5` chevron that transitions from `text-gray-300` to `text-gray-500` on `group-hover` — communicates row navigability.
+- **Typography**: Field name promoted to `font-semibold` with `group-hover:text-agrolens-700 transition-colors`; crop/area metadata line demoted to `text-xs text-gray-400 mt-0.5` for clear hierarchy.
+- **Health badge**: Upgraded from undersized `py-0.5` to `px-2.5 py-1 rounded-full` — readable at all viewport widths.
+- **FIELD_ICON_PATH constant**: Extracted shared SVG `d` attribute as a module-level constant to avoid duplication across empty-state icon and per-row icons.
+- All TypeScript types, sort state, `sorted` computation, `toggleSort()`, `healthLabel()`, `HEALTH_COLORS`, and `"use client"` directive preserved intact.

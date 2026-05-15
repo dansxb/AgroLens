@@ -16,7 +16,10 @@ export default function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex justify-around py-2 z-50">
+    <nav
+      className="md:hidden fixed bottom-0 inset-x-0 bg-white z-50 flex justify-around"
+      style={{ boxShadow: "0 -1px 0 0 rgba(0,0,0,0.06), 0 -4px 16px 0 rgba(0,0,0,0.04)" }}
+    >
       {NAV.map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href);
         return (
@@ -24,12 +27,19 @@ export default function MobileNav() {
             key={href}
             href={href}
             className={clsx(
-              "flex flex-col items-center gap-0.5 px-3 py-1 text-xs font-medium",
-              active ? "text-green-700" : "text-gray-500"
+              "relative flex flex-col items-center gap-1 px-4 py-2 transition-colors duration-150",
+              active ? "text-agrolens-600" : "text-gray-400 hover:text-gray-600"
             )}
           >
+            {/* Active indicator — top bar */}
+            {active && (
+              <span
+                className="absolute top-0 inset-x-3 h-0.5 rounded-full bg-agrolens-500"
+                aria-hidden="true"
+              />
+            )}
             <Icon size={20} />
-            {label}
+            <span className="text-xs font-medium">{label}</span>
           </Link>
         );
       })}

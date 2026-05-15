@@ -5,11 +5,11 @@ producing per-zone prescription rates for a given application type.
 
 ## Multiplier table
 
-| Application Type | Low   | Medium | High  | Very High |
-|-----------------|-------|--------|-------|-----------|
-| fungicide       | 0.60× | 1.00×  | 1.30× | 1.50×     |
-| herbicide       | 0.70× | 1.00×  | 1.20× | 1.40×     |
-| insecticide     | 0.50× | 1.00×  | 1.50× | 1.80×     |
+| Application Type | Low   | Medium-Low | Medium | Medium-High | Very High |
+|-----------------|-------|------------|--------|-------------|-----------|
+| fungicide       | 0.60× | 1.00×      | 1.30×  | 1.50×       | 1.70×     |
+| herbicide       | 0.70× | 1.00×      | 1.20×  | 1.40×       | 1.60×     |
+| insecticide     | 0.50× | 1.00×      | 1.50×  | 1.80×       | 2.00×     |
 
 Multipliers are based on crop-science literature reviewed by agronomists.
 They are **not** trained from machine-learning data.
@@ -48,9 +48,9 @@ ApplicationType = Literal["fungicide", "herbicide", "insecticide"]
 # Ordered zone labels → multiplier index mapping
 # Zones are ordered Low→High as produced by delineation.py
 _MULTIPLIERS: dict[ApplicationType, list[float]] = {
-    "fungicide":   [0.60, 1.00, 1.30, 1.50],
-    "herbicide":   [0.70, 1.00, 1.20, 1.40],
-    "insecticide": [0.50, 1.00, 1.50, 1.80],
+    "fungicide": [0.60, 1.00, 1.30, 1.50, 1.70],
+    "herbicide": [0.70, 1.00, 1.20, 1.40, 1.60],
+    "insecticide": [0.50, 1.00, 1.50, 1.80, 2.00],
 }
 
 DISCLAIMER_DE = (
@@ -139,16 +139,8 @@ def compute_prescription(
         raise ValueError(f"zone_names must have 2–5 entries, got {n_zones}")
 
     multiplier_row = _MULTIPLIERS[application_type]
-    # Select multipliers at evenly-spaced indices across the row for n_zones < 4
-    if n_zones == len(multiplier_row):
-        selected_multipliers = multiplier_row
-    else:
-        # Interpolate index positions to map n_zones entries onto 4-entry table
-        indices = [
-            round(i * (len(multiplier_row) - 1) / (n_zones - 1))
-            for i in range(n_zones)
-        ]
-        selected_multipliers = [multiplier_row[i] for i in indices]
+    # Use the first n_zones entries so fewer zones always map to lower-intensity tiers.
+    selected_multipliers = multiplier_row[:n_zones]
 
     floor = base_rate_l_ha * 0.5
     zones: list[ZonePrescription] = []

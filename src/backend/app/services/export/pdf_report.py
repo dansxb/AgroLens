@@ -16,11 +16,11 @@ from __future__ import annotations
 import io
 import logging
 from datetime import date
-from decimal import Decimal
 from typing import Optional
 
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
+
 from ml.prescription.engine import DISCLAIMER_DE
 
 logger = logging.getLogger(__name__)
@@ -93,7 +93,9 @@ def build_prescription_pdf(
     story = []
 
     # Title
-    story.append(Paragraph("AgroLens — Pflanzenschutz-Applikationskarte", styles["Title"]))
+    story.append(
+        Paragraph("AgroLens — Pflanzenschutz-Applikationskarte", styles["Title"])
+    )
     story.append(Spacer(1, 0.4 * cm))
 
     # Field info
@@ -131,7 +133,9 @@ def build_prescription_pdf(
     if zones:
         mean_rate /= len(zones)
 
-    savings_pct = (1.0 - mean_rate / base_rate_l_ha) * 100 if base_rate_l_ha > 0 else 0.0
+    savings_pct = (
+        (1.0 - mean_rate / base_rate_l_ha) * 100 if base_rate_l_ha > 0 else 0.0
+    )
     table_data.append(["Durchschnitt", "—", "—", f"{mean_rate:.2f}", ""])
 
     t = Table(table_data, colWidths=[3.5 * cm, 2.5 * cm, 2.5 * cm, 3 * cm, 5 * cm])

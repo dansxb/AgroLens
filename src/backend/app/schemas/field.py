@@ -65,7 +65,7 @@ class FieldCreate(BaseModel):
     geometry: Dict[str, Any] = Field(
         ...,
         description=(
-            'GeoJSON Polygon geometry, e.g. '
+            "GeoJSON Polygon geometry, e.g. "
             '{"type": "Polygon", "coordinates": [[[lon, lat], ...]]}.'
         ),
     )
@@ -92,9 +92,7 @@ class FieldCreate(BaseModel):
             )
         coordinates = v.get("coordinates")
         if not coordinates or not isinstance(coordinates, list):
-            raise ValueError(
-                "geometry.coordinates must be a non-empty list of rings."
-            )
+            raise ValueError("geometry.coordinates must be a non-empty list of rings.")
         return v
 
 
@@ -149,9 +147,7 @@ class FieldUpdate(BaseModel):
             return v
         geo_type = v.get("type")
         if geo_type != "Polygon":
-            raise ValueError(
-                f"geometry.type must be 'Polygon', got '{geo_type}'."
-            )
+            raise ValueError(f"geometry.type must be 'Polygon', got '{geo_type}'.")
         return v
 
 

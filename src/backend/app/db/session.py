@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 from typing import AsyncGenerator
 
+from app.core.config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -20,8 +21,6 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import Session, sessionmaker
-
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 engine = create_async_engine(
     settings.database_url,
-    pool_pre_ping=True,      # Test connections before using them
-    pool_size=10,            # Maximum number of connections in the pool
-    max_overflow=20,         # Extra connections allowed above pool_size
-    pool_timeout=30,         # Seconds to wait for a connection from pool
+    pool_pre_ping=True,  # Test connections before using them
+    pool_size=10,  # Maximum number of connections in the pool
+    max_overflow=20,  # Extra connections allowed above pool_size
+    pool_timeout=30,  # Seconds to wait for a connection from pool
     echo=settings.is_development,  # Log SQL statements in development
 )
 

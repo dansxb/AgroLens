@@ -20,11 +20,11 @@ import logging
 import os
 import tempfile
 import zipfile
-from decimal import Decimal
 from typing import Optional
 
 from app.models.management_zone import ManagementZone
 from app.models.prescription import Prescription
+
 from ml.prescription.engine import DISCLAIMER_DE
 
 logger = logging.getLogger(__name__)

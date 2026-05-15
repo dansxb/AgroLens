@@ -14,19 +14,16 @@ Covers:
 
 from __future__ import annotations
 
-import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.models.farm import Farm
 from app.models.field import Field
 from app.models.user import User
-
+from fastapi.testclient import TestClient
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -85,8 +82,8 @@ def _make_field(farm_id: uuid.UUID = FARM_ID) -> Field:
 @pytest.fixture()
 def app_client() -> Generator[TestClient, None, None]:
     """Yield a FastAPI TestClient with auth and DB dependencies overridden."""
-    from main import app
     from app.api.deps import get_current_user, get_db
+    from main import app
 
     mock_user = _make_user()
     mock_db = AsyncMock()
@@ -152,8 +149,8 @@ class TestFarmEndpoints:
         mock_result.scalar_one_or_none.return_value = None
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        from main import app
         from app.api.deps import get_current_user, get_db
+        from main import app
 
         app.dependency_overrides[get_current_user] = lambda: _make_user()
         app.dependency_overrides[get_db] = lambda: mock_db
@@ -199,7 +196,9 @@ class TestFieldEndpoints:
                 "name": "Multi Field",
                 "geometry": {
                     "type": "MultiPolygon",
-                    "coordinates": [[[[13.4, 52.5], [13.41, 52.5], [13.41, 52.51], [13.4, 52.5]]]],
+                    "coordinates": [
+                        [[[13.4, 52.5], [13.41, 52.5], [13.41, 52.51], [13.4, 52.5]]]
+                    ],
                 },
             },
         )
@@ -214,8 +213,8 @@ class TestFieldEndpoints:
         mock_result.scalar_one_or_none.return_value = None
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        from main import app
         from app.api.deps import get_current_user, get_db
+        from main import app
 
         app.dependency_overrides[get_current_user] = lambda: _make_user()
         app.dependency_overrides[get_db] = lambda: mock_db

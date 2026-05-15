@@ -27,7 +27,7 @@ export default function DashboardPage() {
     async function load() {
       try {
         const [farms, usageData] = await Promise.all([
-          apiClient.get<Farm[]>("/api/v1/farms"),
+          apiClient.get<Farm[]>("/api/v1/farms/"),
           apiClient.get<UsageData>("/api/v1/account/usage"),
         ]);
         const allFields = await Promise.all(farms.map((f) => getFields(f.id)));

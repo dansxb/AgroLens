@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 # Pixel resolution of Sentinel-2 10m bands (metres per side)
 _SENTINEL2_RESOLUTION_M = 10.0
-_PIXEL_AREA_HA = (_SENTINEL2_RESOLUTION_M ** 2) / 10_000.0  # 0.01 ha per pixel
+_PIXEL_AREA_HA = (_SENTINEL2_RESOLUTION_M**2) / 10_000.0  # 0.01 ha per pixel
 
 
 def filter_minimum_zone_size(
